@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "canisters": {
+    "core_vault_backend": {
+      "type": "custom",
+      "package": "core_vault_backend",
+      "candid": "packages/core_vault_backend/core_vault_backend.did",
+      "wasm": "target/wasm32-unknown-unknown/release/core_vault_backend.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --package core_vault_backend --release"
+    },
+    "helix_vault_backend": {
+      "type": "custom",
+      "package": "helix_vault_backend",
+      "candid": "packages/helix_vault_backend/helix_vault_backend.did",
+      "wasm": "target/wasm32-unknown-unknown/release/helix_vault_backend.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --package helix_vault_backend --release",
+      "remote": {
+        "id": {
+          "ic": "b77ix-eeaaa-aaaaa-qaada-cai"
+        }
+      }
+    },
+    "shared_ownership_backend": {
+      "type": "custom",
+      "package": "shared_ownership_backend",
+      "candid": "packages/shared_ownership_backend/shared_ownership_backend.did",
+      "wasm": "target/wasm32-unknown-unknown/release/shared_ownership_backend.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --package shared_ownership_backend --release"
+    },
+    "evm_rpc_backend": {
+      "type": "custom",
+      "package": "evm_rpc_backend",
+      "candid": "packages/evm_rpc_backend/evm_rpc_backend.did",
+      "wasm": "target/wasm32-unknown-unknown/release/evm_rpc_backend.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --package evm_rpc_backend --release"
+    },
+    "evm_rpc": {
+      "type": "pull",
+      "id": "7hfb6-caaaa-aaaar-qadga-cai"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "frontend": {}
+    },
+    "helix_vault_frontend": {
+      "type": "assets",
+      "source": ["frontend/helix_vault_frontend/out"],
+      "entrypoint": "frontend/helix_vault_frontend/out/index.html"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    }
+  },
+  "output_env_file": ".env"
+}

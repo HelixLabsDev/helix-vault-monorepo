@@ -1,0 +1,10 @@
+/target/
+**/.DS_Store
+/.dfx/
+/.wasm_modules/
+/canister_ids.json
+**/node_modules/
+**/.idea/
+/.vscode/
+/dist/
+.env

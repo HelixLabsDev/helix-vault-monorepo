@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = [
+  "packages/core_vault_backend",
+  "packages/helix_vault_backend",
+  "packages/shared_ownership_backend",
+  "packages/evm_rpc_backend",
+]

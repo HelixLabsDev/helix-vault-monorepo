@@ -1,0 +1,20 @@
+type ResultText = variant { Ok: text; Err: text };
+
+service : {
+  get_user_balance : (principal) -> (nat) query;
+  get_vault_balance : () -> (nat) query;
+  get_transfer_fee : () -> (nat) query;
+
+  deposit_icrc1 : (nat, text) -> (ResultText);
+  withdraw_icrc1 : (nat) -> (ResultText);
+
+  unlock_icrc1 : (
+    text,   // tx_hash
+    text,   // expected_eth_from
+    text,   // evm_amount_18dec
+    nat,    // withdraw_amount_8dec
+    text    // expected_contract
+  ) -> (ResultText);
+
+  sync_state : () -> (ResultText);
+}
