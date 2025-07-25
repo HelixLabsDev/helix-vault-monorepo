@@ -2,9 +2,46 @@ use candid::{CandidType, Principal};
 use ethers_core::abi::{Function, Param, ParamType, StateMutability, Token};
 use ethers_core::types::{transaction::eip1559::Eip1559TransactionRequest, Address, NameOrAddress, Signature, U256, U64, H160};
 use ethers_core::utils::{hex, keccak256};
-use ic_cdk::{api::management_canister::ecdsa::{ecdsa_public_key, sign_with_ecdsa, EcdsaKeyId, EcdsaCurve, EcdsaPublicKeyArgument, SignWithEcdsaArgument}, export_candid, update};
+use ic_cdk::{api::management_canister::ecdsa::{ecdsa_public_key, sign_with_ecdsa, EcdsaKeyId, EcdsaCurve, EcdsaPublicKeyArgument, SignWithEcdsaArgument}, export_candid, update, query};
 use evm_rpc_canister_types::{RpcServices, RpcError, RpcConfig, RpcApi, EVM_RPC, FeeHistoryArgs, FeeHistoryResult, MultiGetTransactionReceiptResult, MultiFeeHistoryResult, EvmRpcCanister, BlockTag, GetTransactionCountArgs, MultiGetTransactionCountResult, GetTransactionCountResult, GetTransactionReceiptResult};
 use ic_cdk::api::call::call_with_payment128;
+use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
+
+thread_local! {
+    static RPC_CONFIG: RefCell<Option<RpcConfigState>> = RefCell::new(None);
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct RpcConfigState {
+    pub chain_id: u64,
+    pub rpc_url: String,
+}
+
+#[update]
+pub fn set_rpc_config(chain_id: u64, rpc_url: String) -> Result<(), String> {
+    RPC_CONFIG.with(|cfg| {
+        cfg.borrow_mut().replace(RpcConfigState { chain_id, rpc_url });
+    });
+    Ok(())
+}
+
+#[query]
+pub fn get_rpc_config() -> Option<RpcConfigState> {
+    RPC_CONFIG.with(|cfg| cfg.borrow().clone())
+}
+
+fn get_rpc_services() -> Result<RpcServices, String> {
+    RPC_CONFIG.with(|cfg| {
+        cfg.borrow().clone().map(|c| RpcServices::Custom {
+            chainId: c.chain_id,
+            services: vec![RpcApi {
+                url: c.rpc_url,
+                headers: None,
+            }],
+        }).ok_or("RPC config not set".to_string())
+    })
+}
 
 #[derive(CandidType, serde::Serialize, serde::Deserialize)]
 pub struct TransferArgs {
@@ -216,15 +253,8 @@ pub async fn transfer_eth(
 
     let gas = transfer_args.gas.map(U256::from).unwrap_or(U256::from(21000));
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000u64, // Sepolia
-        services: vec![
-            RpcApi { 
-                url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(), 
-                headers: None 
-            },
-        ],
-    };
+    let rpc_services = get_rpc_services()?;
+
 
     let key_id = EcdsaKeyId {
         curve: ic_cdk::api::management_canister::ecdsa::EcdsaCurve::Secp256k1,
@@ -295,13 +325,8 @@ pub async fn approve_erc20(
     let spender_addr = H160::from_slice(&hex::decode(spender.trim_start_matches("0x")).map_err(|e| format!("Invalid spender: {}", e))?);
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000,
-        services: vec![RpcApi {
-            url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-            headers: None,
-        }],
-    };
+    let rpc_services = get_rpc_services()?;
+
     let evm_rpc = EVM_RPC;
 
     let key_id = EcdsaKeyId {
@@ -358,13 +383,8 @@ pub async fn transfer_from_erc20(
     let to_addr = H160::from_slice(&hex::decode(to.trim_start_matches("0x")).map_err(|e| format!("Invalid to: {}", e))?);
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000,
-        services: vec![RpcApi {
-            url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-            headers: None,
-        }],
-    };
+    let rpc_services = get_rpc_services()?;
+
     let evm_rpc = EVM_RPC;
 
     let key_id = EcdsaKeyId {
@@ -419,13 +439,8 @@ pub async fn mint(
     let to_addr = H160::from_slice(&hex::decode(to.trim_start_matches("0x")).map_err(|e| format!("Invalid to: {}", e))?);
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000,
-        services: vec![RpcApi {
-            url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-            headers: None,
-        }],
-    };
+    let rpc_services = get_rpc_services()?;
+
     let evm_rpc = EVM_RPC;
 
     let key_id = EcdsaKeyId {
@@ -477,13 +492,8 @@ pub async fn burn(
     let contract_addr = H160::from_slice(&hex::decode(contract_address.trim_start_matches("0x")).map_err(|e| format!("Invalid contract: {}", e))?);
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000,
-        services: vec![RpcApi {
-            url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-            headers: None,
-        }],
-    };
+    let rpc_services = get_rpc_services()?;
+
     let evm_rpc = EVM_RPC;
 
     let key_id = EcdsaKeyId {
@@ -536,13 +546,8 @@ pub async fn burn_from(
     let from_addr = H160::from_slice(&hex::decode(from.trim_start_matches("0x")).map_err(|e| format!("Invalid from: {}", e))?);
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = RpcServices::Custom {
-        chainId: 17000,
-        services: vec![RpcApi {
-            url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-            headers: None,
-        }],
-    };
+    let rpc_services = get_rpc_services()?;
+
     let evm_rpc = EVM_RPC;
 
     let key_id = EcdsaKeyId {
@@ -595,22 +600,14 @@ pub async fn verify_tx_receipt_with_validation(
 ) -> Result<String, String> {
     use ethers_core::types::U256;
 
+    let rpc_services = get_rpc_services()?;
+    let evm_rpc = EVM_RPC;
     let cycles = 10_000_000_000;
 
     let (result,): (MultiGetTransactionReceiptResult,) = call_with_payment128(
-        EVM_RPC.0,
+        evm_rpc.0,
         "eth_getTransactionReceipt",
-        (
-            RpcServices::Custom {
-                chainId: 17000,
-                services: vec![RpcApi {
-                    url: "https://eth-holesky.g.alchemy.com/v2/FwaK0MIg53axuxO7NJkYD".to_string(),
-                    headers: None,
-                }],
-            },
-            None::<RpcConfig>,
-            tx_hash.clone(),
-        ),
+        (rpc_services.clone(), None::<RpcConfig>, tx_hash.clone()),
         cycles,
     )
     .await
@@ -632,16 +629,14 @@ pub async fn verify_tx_receipt_with_validation(
 
                     for log in logs {
                         let log_address = log.address.to_lowercase();
-                        ic_cdk::println!("Log address: {}", log_address);
-                        ic_cdk::println!("Expected contract: {}", expected_contract);
 
                         if log_address != expected_contract {
                             continue;
                         }
 
                         if log.topics.len() >= 3 {
-                            let from_hex = &log.topics[1][26..]; // Last 40 chars of topic[1]
-                            let to_hex = &log.topics[2][26..];   // Should be zero address
+                            let from_hex = &log.topics[1][26..];
+                            let to_hex = &log.topics[2][26..];
 
                             let is_zero_address = to_hex.chars().all(|c| c == '0');
                             let from_matches = from_hex.to_lowercase() == expected_from.trim_start_matches("0x").to_lowercase();
@@ -650,31 +645,18 @@ pub async fn verify_tx_receipt_with_validation(
                             let expected_clean = expected_amount_hex.trim_start_matches('0');
                             let amount_matches = log_data_clean == expected_clean;
 
-                            // Debug prints
-                            ic_cdk::println!("FROM topic: {}", from_hex);
-                            ic_cdk::println!("Expected FROM: {}", expected_from);
-                            ic_cdk::println!("TO topic: {}", to_hex);
-                            ic_cdk::println!("Zero address check: {}", is_zero_address);
-                            ic_cdk::println!("Log data (amount): {}", log.data);
-                            ic_cdk::println!("Expected amount: {}", expected_amount);
-                            ic_cdk::println!("Expected amount hex: {}", expected_amount_hex);
-                            ic_cdk::println!("amount_matches: {}", amount_matches);
-                            ic_cdk::println!("from_matches: {}", from_matches);
-
                             if from_matches && is_zero_address && amount_matches {
                                 return Ok(format!(
-                                    "Valid burn confirmed. Amount: {}, From: {}, Contract: {}",
+                                    "✅ Valid burn confirmed\n• Amount: {}\n• From: {}\n• Contract: {}",
                                     expected_amount, expected_from, expected_contract
                                 ));
                             }
                         }
                     }
 
-                    Err("Burn log with matching details not found.".to_string())
+                    Err("❌ Burn log with matching details not found.".to_string())
                 }
-                GetTransactionReceiptResult::Err(err) => {
-                    Err(format!("Transaction error: {:?}", err))
-                }
+                GetTransactionReceiptResult::Err(err) => Err(format!("Transaction error: {:?}", err)),
             }
         }
         MultiGetTransactionReceiptResult::Inconsistent(_) => {

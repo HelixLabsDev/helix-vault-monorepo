@@ -1,7 +1,7 @@
 const vaultActorAddress = "cuj6u-c4aaa-aaaaa-qaajq-cai";
-const ledgerActorAddress = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-const IDENTITY_URL = "http://a4tbr-q4aaa-aaaaa-qaafq-cai.localhost:4943/";
-const coreVaultPrincipal = "g6z42-4eaaa-aaaaa-qaata-cai";
+const ledgerActorAddress = "be2us-64aaa-aaaaa-qaabq-cai";
+const IDENTITY_URL = "http://by6od-j4aaa-aaaaa-qaadq-cai.localhost:4943/";
+const coreVaultPrincipal = "avqkn-guaaa-aaaaa-qaaea-cai";
 
 export {
   vaultActorAddress,

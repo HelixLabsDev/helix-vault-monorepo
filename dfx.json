@@ -44,10 +44,10 @@
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
       "frontend": {}
     },
-    "helix_vault_frontend": {
+    "frontend": {
       "type": "assets",
-      "source": ["frontend/helix_vault_frontend/out"],
-      "entrypoint": "frontend/helix_vault_frontend/out/index.html"
+      "source": ["frontend/out"],
+      "entrypoint": "frontend/out/index.html"
     }
   },
   "networks": {

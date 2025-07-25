@@ -8,8 +8,9 @@ use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 
-const ICRC1_LEDGER_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-const EVM_BACKEND_CANISTER_ID: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+const ICRC1_LEDGER_CANISTER_ID: &str = "be2us-64aaa-aaaaa-qaabq-cai";
+const EVM_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+const CONTRACT_ADDRESS: &str = "0x46801cA1cF9225c40CB262f04BACAD867a86EeE1";
 
 #[derive(CandidType, Deserialize, Default, Clone)]
 struct UserBalance {
@@ -94,7 +95,7 @@ async fn deposit_icrc1(amount: Nat, eth_address: String) -> Result<String, Strin
                 *total_deposited += amount.clone();
             });
             let test_evm_rpc_canister: Principal = EVM_BACKEND_CANISTER_ID.parse().unwrap();
-            let contract = "0xF47763Ae4b3C4A04345C65229e99344be107301b".to_string();
+            let contract = CONTRACT_ADDRESS.to_string();
 
             let scaled_amount = (amount.0.clone() * 10u128.pow(10)).to_string();
             let result: (Result<String, String>,) = call(

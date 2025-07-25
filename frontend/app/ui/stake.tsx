@@ -198,7 +198,7 @@ export default function StakeDemo() {
           console.log("tx", tx);
           const expected_eth_from = address ?? "";
           const expected_contract =
-            "0x25601b4776537E5aF36F650797C86eF4138FA4bC";
+            "0x46801cA1cF9225c40CB262f04BACAD867a86EeE1";
 
           // Validation
           if (!/^\d*\.?\d*$/.test(amount)) {
