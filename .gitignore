@@ -10,3 +10,7 @@
 .env
 target/
 scripts/wasm/        # optional, if you ever used it before
+upgrade_args.did
+wasm_hex.txt
+/packages/hstICP/ignition/deployments
+/deps
