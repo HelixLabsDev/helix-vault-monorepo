@@ -82,19 +82,19 @@ dfx canister call evm_rpc_backend set_rpc_config '(12345, "https://your_rpc_url_
 
 This section will help you deploy the `hstICP` ERC-20 smart contract on Ethereum (e.g., Sepolia or Holesky testnet) using Hardhat and Ignition.
 
-## 3.1 Navigate to the hstICP Package
+### 3.1 Navigate to the hstICP Package
 
 ```bash
 cd packages/hstICP
 ```
 
-## 3.2 Install Dependencies
+### 3.2 Install Dependencies
 
 ```bash
 npm install
 ```
 
-## 3.3 Configure Environment Variables
+### 3.3 Configure Environment Variables
 
 Create a .env file in the root of packages/hstICP:
 
@@ -112,7 +112,7 @@ ETHERSCAN_API_KEY="your-etherscan-api-key"
 
 ⚠️ Replace all placeholder values with actual credentials.
 
-## 3.4 Make sure you set the Minter Address
+### 3.4 Make sure you set the Minter Address
 
 Copy the Ethereum public key returned from this command:
 
@@ -127,7 +127,7 @@ Paste it as the minter value in:
 const minter = "0xYourPublicKeyFromAbove";
 ```
 
-## 3.5 Compile and Deploy the Contract
+### 3.5 Compile and Deploy the Contract
 
 ```bash
 npx hardhat compile
@@ -139,7 +139,7 @@ Then deploy:
 npx hardhat ignition deploy ignition/modules/HelixStakedICP.js --network holesky
 ```
 
-## 3.6 Link Contract Address to Vault Canister
+### 3.6 Link Contract Address to Vault Canister
 
 After deployment, you'll receive a contract address.
 
@@ -148,6 +148,91 @@ Update the Rust constant in your vault backend:
 ```rs
 // File: packages/helix_vault_backend/src/lib.rs
 const CONTRACT_ADDRESS: &str = "<replace_with_hstICP_contract_address>";
+```
+
+## 4. Link ICRC-1 token canister id to Vault Canister
+
+```rs
+// File: packages/helix_vault_backend/src/lib.rs
+const ICRC1_LEDGER_CANISTER_ID: &str = "<replace_with_ICRC1_canister_id>";
+```
+
+## 5. Deploying Helix Vault ICP Canisters
+
+This section will walk you through deploying the `helix_vault_backend`, `core_vault_backend`, and `shared_ownership_backend` canisters, and configuring inter-canister references.
+
+### 5.1 Deploy `helix_vault_backend`
+
+This builds the vault backend and generates a `.wasm` file that is linked in `core_vault_backend/src/vault_factory.rs`.
+
+Ensure this line exists:
+
+```rs
+// File: core_vault_backend/src/vault_factory.rs
+const VAULT_WASM: &[u8] = include_bytes!("../../../target/wasm32-unknown-unknown/release/helix_vault_backend.wasm");
+```
+
+Then deploy:
+
+```bash
+dfx deploy helix_vault_backend
+```
+
+### 5.2 Deploy `core_vault_backend`
+
+Deploy the core logic that includes governance and vault creation mechanisms:
+
+```bash
+dfx deploy core_vault_backend
+```
+
+After deployment, copy the canister ID and update this line:
+
+```rs
+// File: packages/shared_ownership_backend/src/shared_ownership.rs
+let core_vault_canister_id = match Principal::from_text("<your-core_vault_backend_canister_id>")
+```
+
+### 5.3 Configure Shared Ownership Admins
+
+We need to register two Internet Identity principals: one for Helix and one for SNS governance.
+
+(a) Get Helix Admin Principal
+
+```bash
+dfx identity get-principal
+```
+
+Copy the output and replace this line:
+
+```rs
+// File: packages/shared_ownership_backend/src/shared_ownership.rs
+const HELIX_ADMINS: &[&str] = &["<your_helix_principal_id>"];
+```
+
+(b) Create and Use SNS Admin Identity
+
+```bash
+dfx identity new sns_admin
+dfx identity use sns_admin
+dfx identity get-principal
+```
+
+Copy the second principal and replace this line:
+
+```rs
+// File: packages/shared_ownership_backend/src/shared_ownership.rs
+const SNS_ADMINS: &[&str] = &["<your_sns_admin_principal_id>"];
+```
+
+💡 You can use more than one principal in each admin list if needed.
+
+### 5.4 Deploy `shared_ownership_backend`
+
+Once both admin principals and the core_vault_backend ID are configured:
+
+```bash
+dfx deploy shared_ownership_backend
 ```
 
 ---
