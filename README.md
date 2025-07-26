@@ -418,6 +418,90 @@ Execute the proposal
 
 ✅ This is the fastest way to test and iterate on governance flows during local development.
 
+## 8. Submitting a Vault Upgrade Proposal
+
+This guide walks you through upgrading an existing vault canister via governance.
+
+### 8.1 Compile New Vault Code
+
+Make changes to your `helix_vault_backend` Rust code, then compile the updated WASM:
+
+```bash
+cargo build --target wasm32-unknown-unknown --release -p helix_vault_backend
+```
+
+### 8.2 Convert WASM to Hex
+
+Use xxd to convert the .wasm binary into a single-line hex string:
+
+```bash
+xxd -p -c 1000000 target/wasm32-unknown-unknown/release/helix_vault_backend.wasm > wasm_hex.txt
+```
+
+### 8.3 Prepare generate_did.sh
+
+Edit the script scripts/generate_did.sh to include the following:
+
+```shell
+vault_id = principal "your-vault-id";
+```
+
+Then run the script to generate the proposal argument:
+
+```bash
+./scripts/generate_did.sh
+```
+
+### 8.4 Add Shared Ownership as Controller (one-time per vault)
+
+Ensure the shared ownership canister has permission to upgrade:
+
+```bash
+dfx canister call core_vault_backend add_controller_to_vault \
+  '(principal "your-vault-canister-id", principal "shared-ownership-canister-id")'
+```
+
+### 8.5 Submit the Upgrade Proposal
+
+Submit the generated proposal using the shared ownership backend:
+
+```bash
+dfx canister call shared_ownership_backend submit_proposal --argument-file upgrade_args.did
+```
+
+### 8.6 Approve and Execute the Proposal
+
+Helix Admin:
+
+```bash
+dfx canister call shared_ownership_backend approve_proposal '(id)'
+```
+
+SNS Admin:
+
+```bash
+dfx canister call shared_ownership_backend approve_proposal '(id)'
+```
+
+Execute the Proposal:
+
+```bash
+dfx canister call shared_ownership_backend execute_proposal '(id)'
+```
+
+### 8.7 Verify the Upgrade
+
+Check the canister’s module hash:
+
+```bash
+dfx canister info your-vault-canister-id
+sha256sum target/wasm32-unknown-unknown/release/helix_vault_backend.wasm
+```
+
+Match the hash with the one listed in the output to confirm a successful upgrade.
+
+🚀 You've now completed a full upgrade cycle using bidirectional shared governance!
+
 ## 📄 License
 
 MIT © Helix Labs
