@@ -30,14 +30,14 @@ fn load_vault_wasm() -> Vec<u8> {
     {
         return DEV_VAULT_WASM.with(|cell| {
             cell.borrow().clone().unwrap_or_else(|| {
-                ic_cdk::trap("❌ Missing vault WASM in dev mode. Call set_dev_vault_wasm() first.")
+                ic_cdk::trap("❗️ Missing vault WASM in dev mode. Call set_dev_vault_wasm() first.")
             })
         });
     }
 
     #[cfg(not(debug_assertions))]
     {
-        ic_cdk::trap("❌ Vault WASM should be uploaded via proposal in production.");
+        ic_cdk::trap("❗️ Vault WASM should be uploaded via proposal in production.");
     }
 }
 

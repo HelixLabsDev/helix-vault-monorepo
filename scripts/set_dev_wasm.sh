@@ -25,8 +25,18 @@ fi
 
 # === ENCODE WASM INTO CANDID ARGUMENT ===
 echo -e "${YELLOW}📤 Encoding WASM as blob for Candid call...${NC}"
+
+# Optionally print first and last few bytes if xxd exists
+if command -v xxd &> /dev/null; then
+  echo -e "${YELLOW}🔍 WASM file preview (first 16 bytes):${NC}"
+  xxd -l 16 "$WASM_PATH"
+  echo -e "${YELLOW}🔍 WASM file preview (last 16 bytes):${NC}"
+  xxd -s -16 "$WASM_PATH"
+fi
+
+# Proper macOS-compatible base64 encoding
 echo -n '(blob "' > "$TMP_ARG_FILE"
-base64 "$WASM_PATH" | tr -d '\n' >> "$TMP_ARG_FILE"
+base64 -i "$WASM_PATH" | tr -d '\n' >> "$TMP_ARG_FILE"
 echo '")' >> "$TMP_ARG_FILE"
 
 # === CALL set_dev_vault_wasm ===
