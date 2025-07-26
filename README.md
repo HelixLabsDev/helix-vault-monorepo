@@ -316,10 +316,107 @@ Make sure the script has executable permissions. If not, run:
 
 ```bash
 chmod +x ./scripts/deploy_frontend.sh
-
 ```
 
----
+## 7 Submit and Execute a Governance Proposal (Shared Ownership Canister)
+
+This step demonstrates how to submit, approve, and execute a governance proposal from the `shared_ownership_backend` canister to create a new vault.
+
+### 7.1 Use Your Helix Admin Identity
+
+Make sure you're using your **Helix Admin** identity (`default`):
+
+```bash
+dfx identity use default
+```
+
+### 7.2 Submit a Proposal
+
+```bash
+dfx canister call shared_ownership_backend submit_proposal '(
+  "Name",
+  "Description",
+  variant { CreateVault = record { token_type = "Test"; duration_secs = 80 : nat64 } }
+)'
+```
+
+### 7.3 Approve with Helix Admin
+
+Still under the default identity:
+
+```bash
+dfx canister call shared_ownership_backend approve_proposal '(0)'
+```
+
+### 7.4 Approve with SNS Admin Identity
+
+Switch to your SNS admin identity (we used dev):
+
+```bash
+dfx identity use dev
+dfx canister call shared_ownership_backend approve_proposal '(0)'
+```
+
+### 7.5 Execute the Proposal
+
+Still under the SNS admin identity (or switch back):
+
+```bash
+dfx canister call shared_ownership_backend execute_proposal '(0)'
+```
+
+This will trigger the actual action (e.g., create vault, upgrade vault).
+
+### 7.6 Interact from the Frontend
+
+7.6.1 Open the frontend in your browser via the deployed frontend canister URL.
+
+7.6.2 Connect your:
+
+7.6.2.1 Internet Identity (ICP Wallet)
+
+7.6.2.2 EVM Wallet (e.g. MetaMask)
+
+7.6.3 Navigate to the Governance section.
+
+7.6.4 You will see the new proposal listed.
+
+7.6.5 You can vote on the proposal using your identity.
+
+7.6.6 Once approved, click Execute from the frontend.
+
+🎉 You're now running the full Helix Vault governance stack with bidirectional approval and execution between Helix and SNS identities!
+
+### 7.7 (Optional) Submit Proposal via Script
+
+To automate the governance flow (submit → approve → execute), you can use the pre-written shell script.
+
+Review or Modify the Script
+
+Open the script and modify parameters as needed.
+
+Make the Script Executable (if not already)
+
+```bash
+chmod +x ./scripts/vault_proposal.sh
+```
+
+Run the Script
+
+```bash
+./scripts/vault_proposal.sh
+```
+
+This will:
+Submit a CreateVault proposal
+
+Approve with Helix admin
+
+Approve with SNS admin
+
+Execute the proposal
+
+✅ This is the fastest way to test and iterate on governance flows during local development.
 
 ## 📄 License
 
