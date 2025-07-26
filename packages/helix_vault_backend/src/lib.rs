@@ -7,6 +7,12 @@ use ic_cdk::call;
 use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
+use ic_cdk_macros::{init, query, update};
+
+#[init]
+fn init() {
+    ic_cdk::println!("Vault canister initialized.");
+}
 
 const ICRC1_LEDGER_CANISTER_ID: &str = "be2us-64aaa-aaaaa-qaabq-cai";
 const EVM_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";

@@ -1,4 +1,4 @@
 cd frontend
 npm run build
-cd ../..
+cd ..
 dfx deploy frontend

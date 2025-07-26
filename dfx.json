@@ -56,5 +56,10 @@
       "type": "ephemeral"
     }
   },
-  "output_env_file": ".env"
+  "output_env_file": ".env",
+  "metadata": [
+    {
+      "name": "candid:service"
+    }
+  ]
 }

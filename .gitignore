@@ -8,3 +8,5 @@
 /.vscode/
 /dist/
 .env
+target/
+scripts/wasm/        # optional, if you ever used it before
