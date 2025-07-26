@@ -1,0 +1,12 @@
+service : {
+  "mint": (text, text, text) -> (variant { ok: text; err: text });
+  "approve_erc20": (text, text, text) -> (variant { ok: text; err: text });
+  "transfer_from_erc20": (text, text, text, text) -> (variant { ok: text; err: text });
+  "transfer_eth": (record {
+    to: text;
+    value: text;
+    gas: opt nat64;
+  }, nat64) -> (variant { ok: text; err: text });
+  "get_canister_eth_address": () -> (text);
+  "verify_tx_receipt_with_validation": (text, text, text, text) -> (variant { ok: text; err: text });
+}

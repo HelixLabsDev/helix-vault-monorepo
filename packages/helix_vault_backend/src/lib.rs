@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::str::FromStr;
 use std::cell::RefCell;
 use candid::{CandidType, Deserialize, Nat};
 use ic_principal::Principal;
@@ -7,16 +6,10 @@ use ic_cdk::call;
 use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
-use ic_cdk_macros::{init, query, update};
 
-#[init]
-fn init() {
-    ic_cdk::println!("Vault canister initialized.");
-}
-
-const ICRC1_LEDGER_CANISTER_ID: &str = "be2us-64aaa-aaaaa-qaabq-cai";
-const EVM_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-const CONTRACT_ADDRESS: &str = "0x46801cA1cF9225c40CB262f04BACAD867a86EeE1";
+const ICRC1_LEDGER_CANISTER_ID: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai";
+const EVM_BACKEND_CANISTER_ID: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
+const CONTRACT_ADDRESS: &str = "0xE00Dc4a249a72FaE2D3D2821B22D4d7578535030";
 
 #[derive(CandidType, Deserialize, Default, Clone)]
 struct UserBalance {

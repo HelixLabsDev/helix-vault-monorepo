@@ -5,7 +5,6 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
-path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -16,8 +15,3 @@ ic-cdk-macros = "0.16"
 ic-cdk-timers = "0.10"
 ic_principal = "0.1.1"  # New dependency for Principal handling
 icrc-ledger-types = "0.1.8"
-
-[profile.release]
-opt-level = "z"
-lto = true
-codegen-units = 1

@@ -21,6 +21,7 @@ import { parse18 } from "@/lib/helpers";
 import { useAccount } from "wagmi";
 import Link from "next/link";
 import { StatsSection } from "./stats-action";
+import { hstICPContract } from "../../lib/constant";
 
 export default function StakeDemo() {
   const {
@@ -179,7 +180,7 @@ export default function StakeDemo() {
         console.log("message", message);
         toast.success(
           <div>
-            <Link href={`https://sepolia.arbiscan.io/tx/${match[0]}`}>
+            <Link href={`https://holesky.etherscan.io/tx/${match[0]}`}>
               Transaction Hash
             </Link>
           </div>,
@@ -197,8 +198,7 @@ export default function StakeDemo() {
           await tx.wait();
           console.log("tx", tx);
           const expected_eth_from = address ?? "";
-          const expected_contract =
-            "0x46801cA1cF9225c40CB262f04BACAD867a86EeE1";
+          const expected_contract = hstICPContract;
 
           // Validation
           if (!/^\d*\.?\d*$/.test(amount)) {
@@ -247,7 +247,7 @@ export default function StakeDemo() {
           toast.success(
             <div>
               Withdraw Successful!{" "}
-              <Link href={`https://sepolia.arbiscan.io/tx/${tx.hash}`}>
+              <Link href={`https://holesky.etherscan.io/tx/${tx.hash}`}>
                 Transaction Hash
               </Link>
             </div>,

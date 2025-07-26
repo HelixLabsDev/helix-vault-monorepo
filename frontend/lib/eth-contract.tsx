@@ -1,9 +1,9 @@
 import { ethers } from "ethers";
 import { getContractEssentials } from "./helpers";
 import hstICPAbi from "../abi/HelixStakedICP.json";
+import { hstICPContract } from "../lib/constant";
 
 // Define the contract address
-const hstICPContract: string = "0xF47763Ae4b3C4A04345C65229e99344be107301b";
 
 // Define the return type interface
 interface HstICPContracts {
