@@ -235,6 +235,90 @@ Once both admin principals and the core_vault_backend ID are configured:
 dfx deploy shared_ownership_backend
 ```
 
+## 6. Configuring the Frontend
+
+This section sets up the frontend for Helix Vault, including Internet Identity, contract and canister addresses, and ICRC-1 integration.
+
+### 6.1 Deploy Internet Identity Canister
+
+```bash
+dfx deploy internet_identity
+```
+
+After deployment, copy the canister ID and update:
+
+```ts
+// File: frontend/lib/constant.ts
+const IDENTITY_URL =
+  "http://<your-internet-identity-canister-id>.localhost:4943/";
+```
+
+### 6.2 Install Frontend Dependencies
+
+Navigate to the frontend directory and install the packages:
+
+```bash
+cd frontend && npm install --force
+```
+
+### 6.3 Configure Contract & Canister Addresses
+
+Update the constants in frontend/lib/constant.ts:
+
+```ts
+// File: frontend/lib/constant.ts
+
+// Paste your ICRC-1 Ledger Canister ID here
+export const ledgerActorAddress = "<your_icrc1_canister_id>";
+
+// Paste your Core Vault Backend Canister ID here
+export const coreVaultPrincipal = "<your_core_vault_backend_canister_id>";
+
+// Paste your deployed hstICP contract address here
+export const hstICPContract = "<your_erc20_contract_address>";
+```
+
+💡 You can replace values manually or use environment-specific overrides later.
+
+### 6.4 Generate and Link Candid Declarations
+
+Run the following command to generate canister interfaces:
+
+```bash
+dfx generate
+```
+
+After generation, copy the declaration folders into the frontend:
+
+```bash
+# Copy main canister declarations
+cp -r .dfx/local/canisters/<your_canister_name> frontend/declarations/<your_canister_name>
+
+# Copy ICRC-1 canister declarations as well
+cp -r <path-to-icrc1-declarations> frontend/declarations/icrc1
+```
+
+Make sure your frontend is importing the correct actors from these declaration folders.
+
+### 6.5 Deploy the Frontend Canister
+
+Once all backend canisters are deployed and your frontend is fully configured, you can deploy the frontend as an Internet Computer canister.
+
+From the **root** of the monorepo (`helix-vault-monorepo`), run:
+
+```bash
+./scripts/deploy_frontend.sh
+```
+
+🛠️ This script will handle building and deploying the helix_vault_frontend canister.
+
+Make sure the script has executable permissions. If not, run:
+
+```bash
+chmod +x ./scripts/deploy_frontend.sh
+
+```
+
 ---
 
 ## 📄 License
