@@ -14,5 +14,6 @@ upgrade_args.did
 wasm_hex.txt
 /packages/hstICP/ignition/deployments
 /deps
-/declarations
-/src/declarations
+declarations
+src/declarations
+frontend/declarations
