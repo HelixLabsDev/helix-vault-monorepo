@@ -9,8 +9,10 @@
 /dist/
 .env
 target/
-scripts/wasm/        # optional, if you ever used it before
+scripts/wasm/
 upgrade_args.did
 wasm_hex.txt
 /packages/hstICP/ignition/deployments
 /deps
+/declarations
+/src/declarations

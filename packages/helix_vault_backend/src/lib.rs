@@ -7,9 +7,9 @@ use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 
-const ICRC1_LEDGER_CANISTER_ID: &str = "ajuq4-ruaaa-aaaaa-qaaga-cai";
+const ICRC1_LEDGER_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
 const EVM_BACKEND_CANISTER_ID: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
-const CONTRACT_ADDRESS: &str = "0xE00Dc4a249a72FaE2D3D2821B22D4d7578535030";
+const CONTRACT_ADDRESS: &str = "0x1672Ba06390E6b870C8dD6f82992fB0ce3B05C9f";
 
 #[derive(CandidType, Deserialize, Default, Clone)]
 struct UserBalance {
@@ -104,7 +104,7 @@ async fn deposit_icrc1(amount: Nat, eth_address: String) -> Result<String, Strin
             ).await.map_err(|e| format!("Call failed: {:?}", e))?;
 
             match result.0 {
-                Ok(tx_hash) => Ok(format!("Deposit successful. Mint tx sent: {}", tx_hash)),
+                Ok(tx_hash) => Ok(format!("Deposit successful. Mint transaction sent: {}", tx_hash)),
                 Err(e) => Err(format!("Deposit succeeded but mint failed: {}", e)),
             }
         }

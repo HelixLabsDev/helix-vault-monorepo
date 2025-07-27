@@ -66,6 +66,8 @@ Run the following command to get the ECDSA public key:
 dfx canister call evm_rpc_backend get_canister_eth_address
 ```
 
+Once you've generated a new address, fund it with the native token on your chosen EVM-compatible chain. This enables the minting of hstICP based on the user's ICRC-1 deposit.
+
 Copy the returned Ethereum address and use it as the **minter role** in the `hstICP` deployment:
 
 File: packages/hstICP/ignition/modules/HelixStakedICP.js
@@ -80,6 +82,12 @@ Finally, configure the RPC URL and chain ID for your local or testnet EVM-compat
 
 ```bash
 dfx canister call evm_rpc_backend set_rpc_config '(12345, "https://your_rpc_url_with_api_key")'
+```
+
+For example:
+
+```bash
+dfx canister call evm_rpc_backend set_rpc_config '(17000:nat64, "https://ethholesky.g.alchemy.com/v2/api-key")'
 ```
 
 ## 3. Deploying the ERC-20: `hstICP` Smart Contract (Ethereum Side)
@@ -175,6 +183,8 @@ Ensure this line exists:
 // File: core_vault_backend/src/vault_factory.rs
 const VAULT_WASM: &[u8] = include_bytes!("../../../target/wasm32-unknown-unknown/release/helix_vault_backend.wasm");
 ```
+
+Begin by navigating to the root of the repository.
 
 Then deploy:
 
@@ -295,11 +305,11 @@ dfx generate
 After generation, copy the declaration folders into the frontend:
 
 ```bash
-# Copy main canister declarations
-cp -r .dfx/local/canisters/<your_canister_name> frontend/declarations/<your_canister_name>
+# Copy main canister declarations core_vault_backend && shared_ownership_backend && helix_vault_backend && internet_identity
+cp -r src/declarations frontend/
 
 # Copy ICRC-1 canister declarations as well
-cp -r <path-to-icrc1-declarations> frontend/declarations/icrc1
+cp -r <path-to-icrc1-declarations> frontend/declarations/
 ```
 
 Make sure your frontend is importing the correct actors from these declaration folders.
