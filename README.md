@@ -2,6 +2,10 @@
 
 This repository contains the backend service for integrating ICP with EVM-compatible networks. It supports minting and burning tokens such as hstICP based on cross-chain events.
 
+You can learn the detailed document and system architecture from here:
+
+[Helix-Document](https://deepwiki.com/HelixLabsDev/helix-vault-monorepo/1-overview)
+
 ---
 
 # ⚡ Quick Start
