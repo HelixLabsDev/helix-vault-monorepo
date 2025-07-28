@@ -39,9 +39,9 @@ import {
   TableRow,
 } from "@/app/ui/table";
 // import { Badge } from "@/app/ui/badge";
-import { DataTableFacetedFilter } from "./FeedbackFaceted";
+import { DataTableFacetedFilter } from "./feedback-faceted";
 import { GovernanceProposal } from "@/declarations/core_vault_backend/core_vault_backend.did";
-import SlugDialog, { getStatusBadge } from "./SlugDialog";
+import SlugDialog, { getStatusBadge } from "./slug-dialog";
 
 // Define the feedback item type based on the provided data structure
 export interface Feedback {
@@ -56,9 +56,17 @@ export interface Feedback {
 
 interface FeedbackDataTableProps {
   data: GovernanceProposal[];
+  setData: React.Dispatch<
+    React.SetStateAction<GovernanceProposal[] | undefined>
+  >;
+  loading: boolean;
 }
 
-export function FeedbackDataTable({ data }: FeedbackDataTableProps) {
+export function FeedbackDataTable({
+  data,
+  setData,
+  loading,
+}: FeedbackDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -130,7 +138,6 @@ export function FeedbackDataTable({ data }: FeedbackDataTableProps) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        console.log("row", row);
         return (
           <div className="flex gap-2 items-end">
             {/* <EditFeedbackDialog feedbackId={feedback.id} data={data} />
@@ -140,7 +147,11 @@ export function FeedbackDataTable({ data }: FeedbackDataTableProps) {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </Link> */}
-            <SlugDialog data={row.original} />
+            <SlugDialog
+              data={row.original}
+              setData={setData}
+              loading={loading}
+            />
           </div>
         );
       },

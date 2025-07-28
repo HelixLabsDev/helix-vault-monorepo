@@ -1,10 +1,4 @@
-import { Geist, Geist_Mono, Michroma } from "next/font/google";
-
-export const fontMichroma = Michroma({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-michroma",
-});
+import { Geist, Geist_Mono } from "next/font/google";
 
 export const geistSans = Geist({
   variable: "--font-geist-sans",

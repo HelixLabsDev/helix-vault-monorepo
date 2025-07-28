@@ -13,8 +13,8 @@ export default function GradientText({
   className = "",
   colors = ["#ffda33", "#9c40ff", "#ffda33"],
   animationSpeed = 8,
-  showBorder = false,
-}: GradientTextProps) {
+}: // showBorder = false,
+GradientTextProps) {
   const gradientStyle = {
     backgroundImage: `linear-gradient(to right, ${colors.join(", ")})`,
     animationDuration: `${animationSpeed}s`,
@@ -22,9 +22,9 @@ export default function GradientText({
 
   return (
     <div
-      className={`relative flex max-w-fit flex-row items-center justify-center rounded-[1.25rem] font-medium backdrop-blur transition-shadow duration-500 overflow-hidden cursor-pointer ${className}`}
+      className={`relative flex max-w-fit flex-row items-center justify-center font-medium backdrop-blur transition-shadow duration-500 overflow-hidden cursor-pointer ${className}`}
     >
-      {showBorder && (
+      {/* {showBorder && (
         <div
           className="absolute inset-0 bg-cover z-0 pointer-events-none animate-gradient"
           style={{
@@ -43,7 +43,7 @@ export default function GradientText({
             }}
           ></div>
         </div>
-      )}
+      )} */}
       <div
         className="inline-block relative z-2 text-transparent bg-cover animate-gradient"
         style={{

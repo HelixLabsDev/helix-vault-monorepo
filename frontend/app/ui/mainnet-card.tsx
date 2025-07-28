@@ -1,37 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Badge } from "@/app/ui/badge";
-import { GovernanceProposal } from "@/declarations/core_vault_backend/core_vault_backend.did";
 import { createActor } from "@/declarations/helix_vault_backend";
 import { useStore } from "@/lib/store";
-import { convertNatToNumber } from "@/lib/utils";
 import { HttpAgent } from "@dfinity/agent";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 
-export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
-  const { setVaultAddress, setActor, authClient, actor } = useStore();
-  const [balance, setBalance] = useState<number>(0);
-
-  const fetchBalances = useCallback(async () => {
-    if (!actor) {
-      console.error("Missing required dependencies for fetching balances");
-      return;
-    }
-
-    try {
-      const vaultBalance = await actor.get_vault_balance();
-      setBalance(convertNatToNumber(vaultBalance.toString()));
-    } catch (error) {
-      console.error("Error fetching balances:", error);
-    }
-  }, [actor]);
-
-  useEffect(() => {
-    if (actor) {
-      fetchBalances();
-    }
-  }, [actor, fetchBalances]);
+export default function MainnetCard({ data }: { data: any[] }) {
+  const { setVaultAddress, setActor, authClient } = useStore();
 
   return data.map((el, id) => {
     return (
@@ -39,7 +15,7 @@ export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
         prefetch
         key={id}
         href="/icp"
-        className="p-8 group rounded-4xl border flex flex-col gap-6 cursor-pointer transition-all col-span-1"
+        className="p-4 md:p-8 group border flex flex-col gap-6 cursor-pointer transition-all col-span-1"
       >
         <div
           className="md:p-0 p-6"
@@ -59,7 +35,7 @@ export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
             setActor(actor);
           }}
         >
-          <div className="flex items-center justify-between w-full py-2">
+          <div className="flex items-center justify-between w-full py-2 mb-2">
             <div className="flex items-center duration-150 ease-in-out gap-4">
               <picture>
                 <img
@@ -71,7 +47,7 @@ export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
                 />
               </picture>
               <div className="relative cursor-pointer items-center justify-center">
-                <p className="text-2xl font-semibold font-michroma">EigenFi</p>
+                <p className="text-2xl font-semibold">EIGENFI</p>
               </div>
             </div>
             <div>
@@ -81,7 +57,7 @@ export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
               </Badge>
             </div>
           </div>
-          <div className="py-4 px-6 bg-zinc-100 dark:bg-black rounded-2xl flex flex-col gap-3">
+          <div className="py-4 px-6 bg-zinc-200 dark:bg-black flex flex-col gap-3">
             <div className="flex justify-between border-b py-6">
               <div className="w-1/2 border-r flex flex-col gap-2">
                 <p className="text-foreground/70 text-base">Vault</p>{" "}
@@ -89,7 +65,7 @@ export default function MainnetCard({ data }: { data: GovernanceProposal[] }) {
               </div>
               <div className="flex flex-col justify-between">
                 <p className="text-foreground/70 text-base">Total Deposits</p>{" "}
-                <div className="text-end w-full text-xl">{balance}</div>
+                <div className="text-end w-full text-xl">{el.lockedAmount}</div>
               </div>
             </div>
 

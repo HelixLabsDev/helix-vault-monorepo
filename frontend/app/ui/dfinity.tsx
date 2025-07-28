@@ -69,7 +69,6 @@ const InternetIdentity = () => {
 
       setIsAuthenticated(true);
       setPrincipal(identity.getPrincipal().toText().toString());
-      console.log("idd: ", principal);
 
       const ledgerActor = createLedgerActor(ledgerActorAddress, {
         agentOptions: { identity },

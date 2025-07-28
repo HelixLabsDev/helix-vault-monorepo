@@ -5,14 +5,20 @@ import _axios from "@/lib/axios";
 export const _depositEthereum = async ({
   address,
   amount,
+  transactionHash,
+  tokenId,
 }: {
   address: string;
   amount: number;
+  transactionHash: string;
+  tokenId: string;
 }) => {
   try {
     const { data, message } = await _axios.post(`deposit`, {
       address,
       amount,
+      transactionHash,
+      tokenId,
     });
 
     return { data, message, status: 200 };

@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const _axios: any = axios.create({
-  baseURL: "https://helix-vault-abd3a5593d90.herokuapp.com/icp",
+  baseURL: "https://icp-vault-backend-f13dd7e78caa.herokuapp.com/icp",
   timeout: 50 * 1000,
 });
 

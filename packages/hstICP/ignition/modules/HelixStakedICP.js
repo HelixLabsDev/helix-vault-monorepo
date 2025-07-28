@@ -1,7 +1,7 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
-const defaultAdmin = "0x3989BCC4a9A4E356265AcC658fB10Dfb3a86ddd7";
-const minter = "0xCE1bCD3510202F58C32C8D37931FFF87B456713A";
+const defaultAdmin = "0xbc873CE5b3Bd0aBA17250E01Cf2ff67CE7B33b4f";
+const minter = "0xe3145E42DA54921646b27D2608f0017aaf8B4344";
 
 module.exports = buildModule("HelixStakedICPModule", (m) => {
   const hstICP = m.contract("HelixStakedICP", [defaultAdmin, minter], {

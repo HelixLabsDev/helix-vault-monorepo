@@ -22,8 +22,9 @@ import { useAccount } from "wagmi";
 import Link from "next/link";
 import { StatsSection } from "./stats-action";
 import { hstICPContract } from "../../lib/constant";
+// import { tvlType } from "../icp/page";
 
-export default function StakeDemo() {
+export default function StakeDemo({ tvl }: { tvl: any }) {
   const {
     actor,
     authClient,
@@ -174,6 +175,8 @@ export default function StakeDemo() {
         const { status, message } = await _depositEthereum({
           address: userPrincipal.toText(),
           amount: Number(amount || 0),
+          transactionHash: match[0],
+          tokenId: `${vaultAddress}`,
         });
 
         console.log("status", status);
@@ -292,13 +295,13 @@ export default function StakeDemo() {
         <TabsList className="mb-2 gap-1 bg-transparent">
           <TabsTrigger
             value="deposit"
-            className="py-1.5 flex gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none duration-300 ease-in-out"
+            className="py-1.5 flex gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none duration-300 ease-in-out"
           >
             Deposit
           </TabsTrigger>
           <TabsTrigger
             value="withdraw"
-            className="py-1.5 flex gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none duration-300 ease-in-out"
+            className="py-1.5 flex gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none duration-300 ease-in-out"
           >
             Withdraw
           </TabsTrigger>
@@ -321,14 +324,8 @@ export default function StakeDemo() {
         </TabsContent>
       </Tabs>
 
-      <div className="shadow hover:bg-primary/5 dark:bg-foreground/5 bg-white rounded-2xl p-4 duration-200 ease-in-out">
-        {/* <Input
-          onChange={(e) => setEthAddress(e.target.value)}
-          value={ethAddress}
-          placeholder="0x..."
-          className="w-full py-6"
-        /> */}
-        <StatsSection />
+      <div className="shadow hover:bg-primary/5 dark:bg-foreground/5 bg-white p-4 duration-200 ease-in-out">
+        <StatsSection tvl={tvl} />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -384,7 +381,7 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
   };
 
   return (
-    <div className="relative ease-in-out duration-300 rounded-2xl">
+    <div className="relative ease-in-out duration-300">
       <div className="absolute top-3 left-4 text-sm text-foreground/80">
         Amount
       </div>
@@ -394,7 +391,7 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
         type="text"
         value={amount}
         onChange={(e) => handleChange(e.target.value)}
-        className="hover:bg-primary/5 dark:bg-foreground/5 bg-white  border-0 rounded-2xl focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
+        className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
       />
       <div className="absolute top-3 right-5">
         <picture className="flex items-center border rounded-full p-1 w-7 h-7 bg-primary/20">

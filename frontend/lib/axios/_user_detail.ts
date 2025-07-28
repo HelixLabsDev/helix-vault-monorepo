@@ -55,3 +55,15 @@ export const _getTransactions = async ({
     return { data: null, message: null, status: 400 };
   }
 };
+
+export const _users = async () => {
+  try {
+    const { data, message } = await _axios.get(`/`, {
+      next: { tags: ["users"] },
+    });
+
+    return { data, message, status: 200 };
+  } catch (e) {
+    return { data: null, message: null };
+  }
+};

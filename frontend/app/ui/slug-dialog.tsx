@@ -15,6 +15,7 @@ import {
 import { useStoreCore } from "@/lib/storeCoreVault";
 import { toast } from "sonner";
 import { Badge } from "./badge";
+import { GovernanceProposal } from "@/declarations/core_vault_backend/core_vault_backend.did";
 
 type ProposalData = {
   id: bigint;
@@ -57,19 +58,25 @@ export const getStatusBadge = (status: string) => {
   }
 };
 
-export default function SlugDialog({ data }: { data: ProposalData }) {
+export default function SlugDialog({
+  data,
+  setData,
+  loading,
+}: {
+  data: ProposalData;
+  setData: React.Dispatch<
+    React.SetStateAction<GovernanceProposal[] | undefined>
+  >;
+  loading: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const { actorCore } = useStoreCore();
   const [action, setAction] = useState<boolean | undefined>();
-  console.log(data);
-
   const [val, setVal] = useState<string>(
     data.votes_for == 1 ? "vote" : data.votes_against == 1 ? "against" : ""
   );
 
   const statusKey = Object.keys(data.status)[0];
-
-  console.log("statusKey", statusKey);
 
   const handleSubmit = async () => {
     try {
@@ -89,6 +96,10 @@ export default function SlugDialog({ data }: { data: ProposalData }) {
       if ("Err" in result) {
         toast.error("Vote failed", { description: result.Err });
       } else {
+        // setData
+        const dat = await actorCore?.list_proposals();
+        setData(dat);
+
         toast.success("Vote submitted", {
           description: `Proposal ID: ${data.id.toString()}`,
         });
@@ -118,6 +129,9 @@ export default function SlugDialog({ data }: { data: ProposalData }) {
         const readable = principal.toText(); // ✅ human-readable string
 
         console.log("readable", readable);
+
+        const dat = await actorCore?.list_proposals();
+        setData(dat);
 
         toast.success("Execution successful", {
           description: `Principal: ${readable}`,
@@ -170,7 +184,9 @@ export default function SlugDialog({ data }: { data: ProposalData }) {
                   setVal(value);
                   setAction(value === "vote");
                 }}
-                disabled={data.votes_for == 1 || data.votes_against == 1}
+                disabled={
+                  data.votes_for == 1 || data.votes_against == 1 || loading
+                }
               >
                 <SelectTrigger className="w-1/2">
                   <SelectValue placeholder="Choose..." />
@@ -183,15 +199,19 @@ export default function SlugDialog({ data }: { data: ProposalData }) {
               <Button
                 className="w-1/2"
                 onClick={handleSubmit}
-                disabled={data.votes_for == 1 || data.votes_against == 1}
+                disabled={
+                  data.votes_for == 1 || data.votes_against == 1 || loading
+                }
               >
-                Submit
+                {loading ? "loading..." : "Submit"}
               </Button>
             </div>
           </div>
 
           {!isDeadlinePassed && statusKey == "Approved" && (
-            <Button onClick={handleExecute}>Execute</Button>
+            <Button onClick={handleExecute} disabled={loading}>
+              Execute
+            </Button>
           )}
         </div>
       </DialogContent>

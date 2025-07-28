@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { geistMono, geistSans, fontMichroma } from "@/app/ui/assets/font";
+import { geistMono, geistSans } from "@/app/ui/assets/font";
 import "./globals.css";
 import { ThemeProvider } from "./ui/theme-wrapper";
 import Header from "./ui/header";
 import Footer from "./ui/footer";
-import { ScrollArea } from "@/app/ui/scroll-area";
 import { Toaster } from "./ui/sonner";
 import ContextProvider from "./ui/reown-provider";
 
@@ -22,7 +21,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.className} ${geistMono.variable} ${fontMichroma.variable} antialiased`}
+        className={`${geistSans.className} ${geistMono.variable} antialiased font-sans`}
       >
         <ContextProvider>
           <ThemeProvider
@@ -31,13 +30,12 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="flex flex-col justify-center min-h-screen px-10">
+            <div className="flex flex-col justify-center min-h-screen max-w-5xl mx-auto overflow-hidden">
               <Header />
-              <ScrollArea className="flex flex-col justify-center h-[82svh] bg-zinc-100 dark:bg-[#01100c] mt-8 items-center rounded-2xl">
+              <main className="px-10 my-32 bg-zinc-50 dark:bg-[#01100c] ">
                 {children}
-              </ScrollArea>
+              </main>
               <Footer />
-
               <Toaster />
             </div>
           </ThemeProvider>

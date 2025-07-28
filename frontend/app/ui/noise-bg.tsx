@@ -94,7 +94,7 @@ const VerticalBarsNoise = () => {
   }, []);
 
   return (
-    <div className="h-[400px] overflow-hidden flex items-center justify-center">
+    <div className="h-[400px] overflow-hidden hidden md:flex items-center justify-center">
       <canvas ref={canvasRef} className="block" />
     </div>
   );

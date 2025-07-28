@@ -1,22 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Skeleton } from "@/app/ui/skeleton";
+// import { tvlType } from "../icp/page";
 
 interface StatItemProps {
   title: string;
   value: string | number | undefined;
 }
 
-export const StatsSection = () => {
+export const StatsSection = ({ tvl }: { tvl: any }) => {
   let stakingRatio = null;
-  let apr = null;
+  let usd = null;
   let rewardReleased = null;
   let uniqueStakers = null;
   let isLoadingPool = false;
 
   stakingRatio = "10";
-  apr = "14";
-  rewardReleased = "100";
-  uniqueStakers = "15";
+  usd = tvl.valueUSD || 0;
+  rewardReleased = tvl?.icpPercentage || "0";
+  uniqueStakers = tvl?.uniqueWallets || "0";
   isLoadingPool = false;
 
   const stats: StatItemProps[] = React.useMemo(
@@ -34,11 +36,11 @@ export const StatsSection = () => {
         value: rewardReleased,
       },
       {
-        title: "Real Time APR",
-        value: `${apr}%`,
+        title: "Total Value (USD)",
+        value: `$${Number(usd).toFixed(2)}`,
       },
     ],
-    [uniqueStakers, stakingRatio, rewardReleased, apr]
+    [uniqueStakers, stakingRatio, rewardReleased, usd]
   );
 
   if (isLoadingPool) {
