@@ -13,7 +13,7 @@ struct VaultInitArg {
 }
 
 pub async fn create_helix_vault(token_symbol: String) -> Result<Principal, String> {
-    let cycles: u128 = 100_000_000_000;
+    let cycles: u128 = 1_000_000_000_000;
 
     let (res,) = create_canister(
         CreateCanisterArgument {

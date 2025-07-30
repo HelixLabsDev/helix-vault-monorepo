@@ -7,9 +7,9 @@ use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 
-const ICRC1_LEDGER_CANISTER_ID: &str = "aax3a-h4aaa-aaaaa-qaahq-cai";
-const EVM_BACKEND_CANISTER_ID: &str = "ctiya-peaaa-aaaaa-qaaja-cai";
-const CONTRACT_ADDRESS: &str = "0x76e39052fea498EE641701dc291A55968E07576b";
+const ICRC1_LEDGER_CANISTER_ID: &str = "5rm7o-daaaa-aaaag-auffa-cai";
+const EVM_BACKEND_CANISTER_ID: &str = "zizlc-oqaaa-aaaaj-qnr6q-cai";
+const CONTRACT_ADDRESS: &str = "0x9DEa2BAfbD1b1dAe75be3De4ffc17B7415bC0DF4";
 
 #[derive(CandidType, Deserialize, Default, Clone)]
 struct UserBalance {

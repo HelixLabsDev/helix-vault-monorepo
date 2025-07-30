@@ -28,7 +28,7 @@ export default function MainnetCard({ data }: { data: any[] }) {
             const identity: any = authClient?.getIdentity();
             const agent = new HttpAgent({
               identity,
-              host: "http://localhost:4943",
+              host: "https://ic0.app",
             });
 
             const actor = createActor(readable ?? "", { agent });

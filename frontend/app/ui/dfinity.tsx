@@ -54,10 +54,15 @@ const InternetIdentity = () => {
 
     if (isAuthenticated) {
       const identity: any = authClient.getIdentity();
-      const agent = new HttpAgent({ identity, host: "http://localhost:4943" });
-      if (process.env.NEXT_PUBLIC_DFX_NETWORK !== "ic") {
-        await agent.fetchRootKey(); // Local dev
+      const isMainnet = true;
+      const agent = new HttpAgent({
+        identity,
+        host: isMainnet ? "https://ic0.app" : "http://localhost:4943",
+      });
+      if (!isMainnet) {
+        await agent.fetchRootKey();
       }
+
       const actor = createActor(
         vaultAddress.length > 0 ? vaultAddress : vaultActorAddress,
         { agent }

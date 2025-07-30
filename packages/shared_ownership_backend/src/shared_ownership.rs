@@ -67,11 +67,11 @@ thread_local! {
 }
 
 const HELIX_ADMINS: &[&str] = &[
-    "irprd-rzz57-dpk4r-uoeki-brwfq-oavjg-hsb3p-6p7gl-wxcea-e2xyt-dqe",
+    "vlasd-azdjd-gjqf7-fvfcz-m2l6t-4wqin-two5b-xewmr-ihtot-s6zqw-iqe",
 ];
 
 const SNS_ADMINS: &[&str] = &[
-    "vbuhp-vaexh-he5qc-ovpdc-olxyo-ogwjl-luimw-6j6cp-hl7vd-wcgg2-wqe",
+    "fr355-aqdyv-mtaza-ae4um-glwpv-55ptp-b5z5a-4cyqm-qhk7z-xpvx7-fqe",
 ];
 
 #[update]
@@ -194,7 +194,7 @@ async fn execute_proposal(id: u64) -> Result_ {
         }
 
         SharedProposalAction::CreateVault { token_type, duration_secs } => {
-            let core_vault_canister_id = match Principal::from_text("cgpjn-omaaa-aaaaa-qaakq-cai") {
+            let core_vault_canister_id = match Principal::from_text("zb2a6-yyaaa-aaaaj-qnr7a-cai") {
                 Ok(principal) => principal,
                 Err(e) => return Result_::Err(format!("Invalid canister ID: {}", e)),
             };

@@ -6,7 +6,13 @@
       "package": "core_vault_backend",
       "candid": "packages/core_vault_backend/core_vault_backend.did",
       "wasm": "target/wasm32-unknown-unknown/release/core_vault_backend.wasm",
-      "build": "cargo build --target wasm32-unknown-unknown --package core_vault_backend --release"
+      "build": "cargo build --target wasm32-unknown-unknown --package core_vault_backend --release",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "value": "packages/core_vault_backend/core_vault_backend.did"
+        }
+      ]
     },
     "helix_vault_backend": {
       "type": "custom",
@@ -18,21 +24,39 @@
         "id": {
           "ic": "b77ix-eeaaa-aaaaa-qaada-cai"
         }
-      }
+      },
+      "metadata": [
+        {
+          "name": "candid:service",
+          "value": "packages/helix_vault_backend/helix_vault_backend.did"
+        }
+      ]
     },
     "shared_ownership_backend": {
       "type": "custom",
       "package": "shared_ownership_backend",
       "candid": "packages/shared_ownership_backend/shared_ownership_backend.did",
       "wasm": "target/wasm32-unknown-unknown/release/shared_ownership_backend.wasm",
-      "build": "cargo build --target wasm32-unknown-unknown --package shared_ownership_backend --release"
+      "build": "cargo build --target wasm32-unknown-unknown --package shared_ownership_backend --release",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "value": "packages/shared_ownership_backend/shared_ownership_backend.did"
+        }
+      ]
     },
     "evm_rpc_backend": {
       "type": "custom",
       "package": "evm_rpc_backend",
       "candid": "packages/evm_rpc_backend/evm_rpc_backend.did",
       "wasm": "target/wasm32-unknown-unknown/release/evm_rpc_backend.wasm",
-      "build": "cargo build --target wasm32-unknown-unknown --package evm_rpc_backend --release"
+      "build": "cargo build --target wasm32-unknown-unknown --package evm_rpc_backend --release",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "value": "packages/evm_rpc_backend/evm_rpc_backend.did"
+        }
+      ]
     },
     "evm_rpc": {
       "type": "pull",
@@ -42,6 +66,12 @@
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "specified_id": "rdmx6-jaaaa-aaaaa-aaadq-cai",
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
       "frontend": {}
     },
     "frontend": {
@@ -54,12 +84,10 @@
     "local": {
       "bind": "127.0.0.1:4943",
       "type": "ephemeral"
+    },
+    "ic": {
+      "type": "persistent"
     }
   },
-  "output_env_file": ".env",
-  "metadata": [
-    {
-      "name": "candid:service"
-    }
-  ]
+  "output_env_file": ".env"
 }

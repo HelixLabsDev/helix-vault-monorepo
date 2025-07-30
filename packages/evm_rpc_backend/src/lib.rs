@@ -90,7 +90,7 @@ pub async fn get_canister_public_key(
     key.public_key
 }
 
-pub async fn sign_eip1559_transaction(
+pub async fn sign_eip1559_transaction (
     tx: Eip1559TransactionRequest,
     key_id: EcdsaKeyId,
     derivation_path: Vec<Vec<u8>>,
@@ -167,7 +167,7 @@ fn y_parity(prehash: &[u8], sig: &[u8], pubkey: &[u8]) -> u64 {
 async fn get_canister_eth_address() -> String {
     let key_id = EcdsaKeyId {
         curve: ic_cdk::api::management_canister::ecdsa::EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
     let pubkey = get_canister_public_key(key_id, None, vec![]).await;
     pubkey_bytes_to_address(&pubkey)
@@ -258,7 +258,7 @@ pub async fn transfer_eth(
 
     let key_id = EcdsaKeyId {
         curve: ic_cdk::api::management_canister::ecdsa::EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let evm_rpc = EVM_RPC;
@@ -331,7 +331,7 @@ pub async fn approve_erc20(
 
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let pubkey = get_canister_public_key(key_id.clone(), None, vec![]).await;
@@ -389,7 +389,7 @@ pub async fn transfer_from_erc20(
 
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let pubkey = get_canister_public_key(key_id.clone(), None, vec![]).await;
@@ -445,7 +445,7 @@ pub async fn mint(
 
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let pubkey = get_canister_public_key(key_id.clone(), None, vec![]).await;
@@ -498,7 +498,7 @@ pub async fn burn(
 
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let pubkey = get_canister_public_key(key_id.clone(), None, vec![]).await;
@@ -552,7 +552,7 @@ pub async fn burn_from(
 
     let key_id = EcdsaKeyId {
         curve: EcdsaCurve::Secp256k1,
-        name: "dfx_test_key".to_string(),
+        name: "key_1".to_string(),
     };
 
     let pubkey = get_canister_public_key(key_id.clone(), None, vec![]).await;

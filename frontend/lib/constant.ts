@@ -1,8 +1,8 @@
 const vaultActorAddress = "dccg7-xmaaa-aaaaa-qaamq-cai";
-const ledgerActorAddress = "aax3a-h4aaa-aaaaa-qaahq-cai";
-const IDENTITY_URL = "http://cinef-v4aaa-aaaaa-qaalq-cai.localhost:4943/";
-const coreVaultPrincipal = "cgpjn-omaaa-aaaaa-qaakq-cai";
-const hstICPContract = "0x76e39052fea498EE641701dc291A55968E07576b";
+const ledgerActorAddress = "5rm7o-daaaa-aaaag-auffa-cai";
+const IDENTITY_URL = "https://identity.ic0.app/";
+const coreVaultPrincipal = "zb2a6-yyaaa-aaaaj-qnr7a-cai";
+const hstICPContract = "0x9DEa2BAfbD1b1dAe75be3De4ffc17B7415bC0DF4";
 
 export {
   vaultActorAddress,

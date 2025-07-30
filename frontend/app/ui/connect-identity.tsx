@@ -89,9 +89,13 @@ export function InternetIdentityConnect({
   // Setup actors with identity
   async function updateActor(authClient: AuthClient) {
     const identity: any = authClient.getIdentity();
-    const agent = new HttpAgent({ identity, host: "http://localhost:4943" });
+    const isMainnet = true;
+    const agent = new HttpAgent({
+      identity,
+      host: isMainnet ? "https://ic0.app" : "http://localhost:4943",
+    });
 
-    if (process.env.NEXT_PUBLIC_DFX_NETWORK !== "ic") {
+    if (!isMainnet) {
       await agent.fetchRootKey();
     }
 
