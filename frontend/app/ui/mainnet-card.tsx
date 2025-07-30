@@ -53,7 +53,7 @@ export default function MainnetCard({ data }: { data: any[] }) {
             <div>
               <Badge variant={"outline"}>
                 <div className="w-1 h-1 animate-pulse bg-primary rounded-full" />
-                Mainnet
+                Testnet
               </Badge>
             </div>
           </div>

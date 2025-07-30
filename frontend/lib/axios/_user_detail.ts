@@ -4,7 +4,7 @@ import _axios from "@/lib/axios";
 
 export const _userDetail = async ({ address }: { address: string }) => {
   try {
-    const { data, message } = await _axios.get(`/${address}`, {
+    const { data, message } = await _axios.get(`/icp/${address}`, {
       next: { tags: ["user"] },
     });
 
@@ -23,7 +23,7 @@ export const _seenContest = async ({
 }) => {
   try {
     const { data, message } = await _axios.post(
-      `${address}/contest/${id}/seen`,
+      `/icp/${address}/contest/${id}/seen`,
       {
         id,
       }
@@ -44,7 +44,7 @@ export const _getTransactions = async ({
 }) => {
   try {
     const { data, message } = await _axios.get(
-      `${address}/transactions?limit=${limit}`,
+      `/icp/${address}/transactions?limit=${limit}`,
       {
         next: { tags: ["transactions"] },
       }
@@ -56,9 +56,21 @@ export const _getTransactions = async ({
   }
 };
 
+export const _usersTVL = async () => {
+  try {
+    const { data, message } = await _axios.get(`/tvl`, {
+      next: { tags: ["usersTVL"] },
+    });
+
+    return { data, message, status: 200 };
+  } catch (e) {
+    return { data: null, message: null };
+  }
+};
+
 export const _users = async () => {
   try {
-    const { data, message } = await _axios.get(`/`, {
+    const { data, message } = await _axios.get(`/icp/`, {
       next: { tags: ["users"] },
     });
 

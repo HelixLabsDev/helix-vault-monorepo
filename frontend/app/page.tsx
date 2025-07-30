@@ -8,7 +8,7 @@ import { useStoreCore } from "@/lib/storeCoreVault";
 import { useEffect, useState } from "react";
 // import { GovernanceProposal } from "@/declarations/core_vault_backend/core_vault_backend.did";
 import { Skeleton } from "./ui/skeleton";
-import { _users } from "@/lib/axios/_user_detail";
+import { _users, _usersTVL } from "@/lib/axios/_user_detail";
 // import OnboardCard from "./ui/onboard";
 //
 export default function Home() {
@@ -22,14 +22,14 @@ export default function Home() {
     } else if (num >= 1_000) {
       return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
     }
-    return num.toString();
+    return num.toFixed(2).toString();
   }
 
   const { actorCore } = useStoreCore();
 
   const [data2, setData2] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [lockedValue, setLockedValue] = useState<number>(0);
+  const [tvl, setTvl] = useState<any>({ totalValueLockedUSD: 0 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -85,14 +85,9 @@ export default function Home() {
     const fetch = async () => {
       setLoading(true);
       try {
-        const usersData = await _users();
+        const usersData = await _usersTVL();
         console.log("usersData", usersData);
-        const amount = usersData.data.reduce(
-          (acc: number, el: any) => acc + Number(el.lockedAmount || 0),
-          0
-        );
-
-        setLockedValue(amount);
+        setTvl(usersData.data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -111,19 +106,19 @@ export default function Home() {
             <p className="text-6xl font-light">ICP Vault</p>
           </GradientText>
           <p className="text-muted-foreground text-base md:text-lg font-light leading-6 text-justify">
-            The ICP Vault is a decentralized platform that allows users to store
-            their ICP tokens in a secure and accessible manner. With the ICP
-            Vault, users can easily transfer their ICP tokens to other users,
-            enabling seamless and secure transactions.
+            Helix Vault is a cross-chain liquid staking platform that lets you
+            stake nICP on the Internet Computer and receive hstICP on Ethereum —
+            unlocking DeFi access, yield, and seamless 1:1 redemption. Fully
+            governed on-chain with modular upgradeability.
           </p>
           <div className="flex items-center gap-2 justify-between">
             <div className="flex flex-col gap-2 justify-between">
-              <p className="text-lg text-foreground/90">Total Amount Locked</p>
+              <p className="text-lg text-foreground/90">Total Value Locked</p>
               <div className="text-5xl">
                 {loading ? (
                   <Skeleton className="h-8 w-32" />
                 ) : (
-                  formatNumber(lockedValue)
+                  `$${formatNumber(tvl.totalValueLockedUSD)}`
                 )}
               </div>
             </div>{" "}

@@ -194,7 +194,7 @@ async fn execute_proposal(id: u64) -> Result_ {
         }
 
         SharedProposalAction::CreateVault { token_type, duration_secs } => {
-            let core_vault_canister_id = match Principal::from_text("by6od-j4aaa-aaaaa-qaadq-cai") {
+            let core_vault_canister_id = match Principal::from_text("cgpjn-omaaa-aaaaa-qaakq-cai") {
                 Ok(principal) => principal,
                 Err(e) => return Result_::Err(format!("Invalid canister ID: {}", e)),
             };

@@ -22,9 +22,17 @@ import { useAccount } from "wagmi";
 import Link from "next/link";
 import { StatsSection } from "./stats-action";
 import { hstICPContract } from "../../lib/constant";
+import { _userDetail } from "@/lib/axios/_user_detail";
+import { VaultUser } from "../icp/page";
 // import { tvlType } from "../icp/page";
 
-export default function StakeDemo({ tvl }: { tvl: any }) {
+export default function StakeDemo({
+  tvl,
+  setUsers,
+}: {
+  tvl: any;
+  setUsers: any;
+}) {
   const {
     actor,
     authClient,
@@ -82,6 +90,15 @@ export default function StakeDemo({ tvl }: { tvl: any }) {
       fetchBalances();
     }
   }, [actor, principal, ledgerActor, fetchBalances]);
+
+  const updateTransaction = async () => {
+    try {
+      const userData = await _userDetail({ address: principal ?? "" });
+      setUsers(userData?.data as VaultUser);
+    } catch (err) {
+      console.error("Error fetching user details:", err);
+    }
+  };
 
   const handleTransaction = async (type: "deposit" | "withdraw") => {
     if (!actor || !ledgerActor || !authClient || !amount || !principal) {
@@ -178,9 +195,9 @@ export default function StakeDemo({ tvl }: { tvl: any }) {
           transactionHash: match[0],
           tokenId: `${vaultAddress}`,
         });
-
-        console.log("status", status);
-        console.log("message", message);
+        if (status > 200) return toast.error(message, { id: toastId });
+        updateTransaction();
+        setAmount("");
         toast.success(
           <div>
             <Link href={`https://holesky.etherscan.io/tx/${match[0]}`}>
@@ -239,14 +256,18 @@ export default function StakeDemo({ tvl }: { tvl: any }) {
             return;
           }
 
+          console.log("tx?.hash", tx?.hash);
           const { status, message } = await _withdrawEthereum({
             address: userPrincipal.toText(),
             amount: Number(amount || 0),
+            transactionHash: tx?.hash,
+            tokenId: `${vaultAddress}`,
           });
 
-          console.log("status", status);
-          console.log("message", message);
+          if (status > 200) return toast.error(message, { id: toastId });
 
+          updateTransaction();
+          setAmount("");
           toast.success(
             <div>
               Withdraw Successful!{" "}
@@ -412,7 +433,7 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
         </div>
       </div>
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
-        <span className="py-1 text-foreground/80">{balance} ICP</span>
+        <span className="py-1 text-foreground/80">{balance} nICP</span>
         <Button
           variant="ghost"
           size="xs"

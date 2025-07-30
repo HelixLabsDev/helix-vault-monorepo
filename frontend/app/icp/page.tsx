@@ -15,6 +15,19 @@ import TransactionList, { Transaction } from "../ui/transaction-list";
 
 const LottiePlayer = dynamic(() => import("lottie-react"), { ssr: false });
 
+function formatNumber(num: number): string {
+  if (num >= 1_000_000_000_000) {
+    return (num / 1_000_000_000_000).toFixed(1).replace(/\.0$/, "") + "T";
+  } else if (num >= 1_000_000_000) {
+    return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B";
+  } else if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  }
+  return num.toFixed(2).toString();
+}
+
 export interface VaultUser {
   address: string;
   points: string;
@@ -141,25 +154,31 @@ export default function Home() {
   }, [principal]);
 
   const stats = [
-    { label: "Total Deposits", value: balance ? balance.toString() : "0" },
+    {
+      label: "Total Deposits",
+      value: balance ? formatNumber(balance).toString() : "0",
+    },
     { label: "Liquidity", value: "12.74k" },
-    { label: "APY", value: "4.18%" },
+    { label: "APY", value: "15.1%" },
   ];
 
   const statsWithBalance = [
-    { label: "Total Deposits", value: balance ? balance.toString() : "0" },
+    {
+      label: "Total Deposits",
+      value: balance ? formatNumber(balance) : "0",
+    },
     {
       label: "User Balance",
-      value: userBalance ? userBalance.toString() : "0",
+      value: userBalance ? formatNumber(userBalance).toString() : "0",
     },
-    { label: "APY", value: "4.18%" },
+    { label: "APY", value: "15.1%" },
   ];
 
   return (
     <div className="flex md:flex-row flex-col gap-12 w-full items-start pt-12 h-full">
       <div className="flex flex-col gap-12 w-full md:w-2/3">
         <div className="text-6xl font-light relative overflow-hidden">
-          ICP <span className="text-muted-foreground">Vault</span>
+          nICP <span className="text-muted-foreground">Vault</span>
           <LottiePlayer
             animationData={animation}
             loop={true}
@@ -168,10 +187,10 @@ export default function Home() {
           />
         </div>
         <p className="text-muted-foreground text-lg font-light leading-6 text-justify">
-          The ICP Vault is a decentralized platform that allows users to store
-          their ICP tokens in a secure and accessible manner. With the ICP
-          Vault, users can easily transfer their ICP tokens to other users,
-          enabling seamless and secure transactions.
+          Helix Vault is a cross-chain liquid staking platform that lets you
+          stake nICP on the Internet Computer and receive hstICP on Ethereum —
+          unlocking DeFi access, yield, and seamless 1:1 redemption. Fully
+          governed on-chain with modular upgradeability.
         </p>
         <Statistics
           loading={loading}
@@ -180,7 +199,10 @@ export default function Home() {
         <VaultTabs points={points} users={users} />
       </div>
       <div className="mt-12 w-full md:w-1/3 block md:sticky top-5 relative">
-        <StakeDemo tvl={users ?? { valueUSD: "0", icpPercentage: "0" }} />
+        <StakeDemo
+          tvl={users ?? { valueUSD: "0", icpPercentage: "0" }}
+          setUsers={setUsers}
+        />
       </div>
     </div>
   );

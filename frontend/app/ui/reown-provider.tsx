@@ -18,7 +18,7 @@ if (!projectId) {
 const metadata = {
   name: "EigenFi - ICP Vault",
   description:
-    "The ICP Vault is a decentralized platform that allows users to store their ICP tokens in a secure and accessible manner. With the ICP Vault, users can easily transfer their ICP tokens to other users, enabling seamless and secure transactions.",
+    "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake nICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
   url: "https://reown.com/appkit", // origin must match your domain & subdomain
   icons: ["/favicon.ico", "/icp.svg"],
 };

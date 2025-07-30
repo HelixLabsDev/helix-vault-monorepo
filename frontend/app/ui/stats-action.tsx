@@ -18,7 +18,7 @@ export const StatsSection = ({ tvl }: { tvl: any }) => {
   stakingRatio = "10";
   usd = tvl.valueUSD || 0;
   rewardReleased = tvl?.icpPercentage || "0";
-  uniqueStakers = tvl?.uniqueWallets || "0";
+  uniqueStakers = tvl?.uniqueWallets || "1";
   isLoadingPool = false;
 
   const stats: StatItemProps[] = React.useMemo(

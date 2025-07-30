@@ -14,7 +14,7 @@ export const _depositEthereum = async ({
   tokenId: string;
 }) => {
   try {
-    const { data, message } = await _axios.post(`deposit`, {
+    const { data, message } = await _axios.post(`/icp/deposit`, {
       address,
       amount,
       transactionHash,
@@ -30,14 +30,20 @@ export const _depositEthereum = async ({
 export const _withdrawEthereum = async ({
   address,
   amount,
+  transactionHash,
+  tokenId,
 }: {
   address: string;
   amount: number;
+  transactionHash: string;
+  tokenId: string;
 }) => {
   try {
-    const { data, message } = await _axios.post(`withdraw`, {
+    const { data, message } = await _axios.post(`/icp/withdraw`, {
       address,
       amount,
+      transactionHash,
+      tokenId,
     });
 
     return { data, message, status: 200 };
