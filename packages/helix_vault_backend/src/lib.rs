@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Helix Labs
+
 use std::collections::{HashMap, HashSet};
 use std::cell::RefCell;
 use candid::{CandidType, Deserialize, Nat};

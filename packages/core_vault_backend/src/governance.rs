@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Helix Labs
+
 use crate::types::*;
 use std::cell::RefCell;
 use std::collections::HashSet;

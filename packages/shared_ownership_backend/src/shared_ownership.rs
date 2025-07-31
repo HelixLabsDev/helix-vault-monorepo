@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Helix Labs
+
 use ic_cdk_macros::{update, query};
 use ic_cdk::api::{caller, management_canister::main::{install_code, CanisterInstallMode, InstallCodeArgument}};
 use std::collections::HashSet;

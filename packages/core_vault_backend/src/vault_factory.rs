@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Helix Labs
+
 use candid::{CandidType, Encode, Principal};
 use ic_cdk::api::management_canister::main::{
     create_canister, install_code, CanisterInstallMode, CreateCanisterArgument, InstallCodeArgument,

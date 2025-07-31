@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Helix Labs
+
 pub mod governance;
 pub mod types;
 mod vault_factory;
