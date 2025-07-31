@@ -518,4 +518,4 @@ Match the hash with the one listed in the output to confirm a successful upgrade
 
 ## 📄 License
 
-MIT © Helix Labs
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
