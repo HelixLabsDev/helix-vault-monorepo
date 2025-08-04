@@ -27,7 +27,7 @@ export default function FeedbackDialog() {
   const [actionType, setActionType] = useState<"CreateVault" | "UpgradeVault">(
     "CreateVault"
   );
-  const [tokenSymbol, setTokenSymbol] = useState("nICP");
+  const [tokenSymbol, setTokenSymbol] = useState("hICP");
   const [vaultId, setVaultId] = useState("");
   const [newCodeHash, setNewCodeHash] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +66,7 @@ export default function FeedbackDialog() {
 
       setTitle("");
       setDescription("");
-      setTokenSymbol("nICP");
+      setTokenSymbol("hICP");
       setVaultId("");
       setNewCodeHash("");
       setOpen(false);

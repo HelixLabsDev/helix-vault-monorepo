@@ -18,7 +18,7 @@ if (!projectId) {
 const metadata = {
   name: "EigenFi - ICP Vault",
   description:
-    "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake nICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
+    "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake hICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
   url: "https://reown.com/appkit", // origin must match your domain & subdomain
   icons: ["/favicon.ico", "/icp.svg"],
 };

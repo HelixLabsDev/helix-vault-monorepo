@@ -8,9 +8,9 @@ import { Toaster } from "./ui/sonner";
 import ContextProvider from "./ui/reown-provider";
 
 export const metadata: Metadata = {
-  title: "EigenFi - nICP Vault",
+  title: "EigenFi - hICP Vault",
   description:
-    "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake nICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
+    "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake hICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
 };
 
 export default async function RootLayout({

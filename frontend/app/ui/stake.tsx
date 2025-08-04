@@ -231,7 +231,7 @@ export default function StakeDemo({
             throw new Error("Invalid EVM amount: cannot convert to base units");
           }
 
-          // ✅ 8-decimal BigInt (for nICP withdraw)
+          // ✅ 8-decimal BigInt (for hICP withdraw)
           const withdraw_amount_8dec = convertToNat(amount); // BigInt
 
           // Debug
@@ -433,7 +433,7 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
         </div>
       </div>
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
-        <span className="py-1 text-foreground/80">{balance} nICP</span>
+        <span className="py-1 text-foreground/80">{balance} hICP</span>
         <Button
           variant="ghost"
           size="xs"

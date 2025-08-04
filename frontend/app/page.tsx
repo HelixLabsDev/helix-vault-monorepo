@@ -107,7 +107,7 @@ export default function Home() {
           </GradientText>
           <p className="text-muted-foreground text-base md:text-lg font-light leading-6 text-justify">
             Helix Vault is a cross-chain liquid staking platform that lets you
-            stake nICP on the Internet Computer and receive hstICP on Ethereum —
+            stake hICP on the Internet Computer and receive hstICP on Ethereum —
             unlocking DeFi access, yield, and seamless 1:1 redemption. Fully
             governed on-chain with modular upgradeability.
           </p>
