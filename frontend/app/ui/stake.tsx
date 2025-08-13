@@ -25,6 +25,16 @@ import { hstICPContract } from "../../lib/constant";
 import { _userDetail } from "@/lib/axios/_user_detail";
 import { VaultUser } from "../icp/page";
 // import { tvlType } from "../icp/page";
+import { DepositProgressDialog, initialSteps } from "./progress-bar";
+
+interface DepositStep {
+  id: string;
+  title: string;
+  description: string;
+  status: "pending" | "in-progress" | "completed" | "failed";
+  txHash?: string;
+  estimatedTime?: string;
+}
 
 export default function StakeDemo({
   tvl,
@@ -49,6 +59,9 @@ export default function StakeDemo({
 
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
   const [amount, setAmount] = useState<string>("");
+  const [steps, setSteps] = useState<DepositStep[]>(initialSteps);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { address } = useAccount();
 
@@ -121,6 +134,10 @@ export default function StakeDemo({
       const amountNat = convertToNat(amount);
 
       if (type === "deposit") {
+        setIsOpen(true);
+        setIsProcessing(true);
+        setSteps(initialSteps); // Reset steps
+        updateStepStatus("approve", "in-progress");
         const allowanceResult = await ledgerActor.icrc2_allowance({
           account: { owner: userPrincipal, subaccount: [] },
           spender: {
@@ -157,8 +174,11 @@ export default function StakeDemo({
             });
             return;
           }
+
+          updateStepStatus("approve", "completed");
         }
 
+        updateStepStatus("deposit", "in-progress");
         // Perform Deposit
         toast.loading("Depositing...", { id: toastId });
 
@@ -179,6 +199,9 @@ export default function StakeDemo({
           toast.error("Tx hash not found in response", { id: toastId });
           return;
         }
+
+        updateStepStatus("deposit", "completed");
+
         console.log("Deposit Response:", res);
         console.log("address: ", address);
 
@@ -189,6 +212,8 @@ export default function StakeDemo({
           return;
         }
 
+        updateStepStatus("confirm", "in-progress");
+
         const { status, message } = await _depositEthereum({
           address: userPrincipal.toText(),
           amount: Number(amount || 0),
@@ -198,6 +223,11 @@ export default function StakeDemo({
         if (status > 200) return toast.error(message, { id: toastId });
         updateTransaction();
         setAmount("");
+
+        updateStepStatus("confirm", "completed");
+
+        console.log("status", status);
+        console.log("message", message);
         toast.success(
           <div>
             <Link href={`https://holesky.etherscan.io/tx/${match[0]}`}>
@@ -206,6 +236,10 @@ export default function StakeDemo({
           </div>,
           { id: toastId }
         );
+        updateStepStatus("complete", "completed");
+
+        setIsProcessing(false);
+        // setIsOpen(false);
       } else {
         // Perform Withdrawal
         toast.loading("Withdrawing...", { id: toastId });
@@ -295,6 +329,40 @@ export default function StakeDemo({
     }
   };
 
+  const updateStepStatus = (
+    stepId: string,
+    status: DepositStep["status"],
+    txHash?: string
+  ) => {
+    setSteps((prev) =>
+      prev.map((step) =>
+        step.id === stepId ? { ...step, status, txHash } : step
+      )
+    );
+  };
+
+  // const handleDepositProcess = async () => {
+  //   setIsProcessing(true);
+  //   setSteps(initialSteps); // Reset steps
+
+  //   try {
+  //     // Step 3: Confirmation
+  //     updateStepStatus("confirm", "in-progress");
+  //     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate confirmation wait
+  //     updateStepStatus("confirm", "completed");
+
+  //     // Step 4: Complete
+  //     updateStepStatus("complete", "in-progress");
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+  //     updateStepStatus("complete", "completed");
+  //   } catch (error) {
+  //     console.error("Deposit failed:", error);
+  //     updateStepStatus(inProgressStep?.id || "approve", "failed");
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
+
   const handleAmountChange = (value: string) => {
     const sanitizedValue = value.replace(/[^0-9.]/g, "");
     const parts = sanitizedValue.split(".");
@@ -348,6 +416,15 @@ export default function StakeDemo({
       <div className="shadow hover:bg-primary/5 dark:bg-foreground/5 bg-white p-4 duration-200 ease-in-out">
         <StatsSection tvl={tvl} />
       </div>
+
+      <DepositProgressDialog
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        amount={amount}
+        tokenSymbol="ICP"
+        steps={steps}
+        isProcessing={isProcessing}
+      />
 
       <div className="flex flex-col gap-2">
         {isAuthenticated ? (
