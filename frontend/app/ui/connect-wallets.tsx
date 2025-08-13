@@ -14,11 +14,12 @@ import { useStore } from "@/lib/store";
 import { useState, useEffect } from "react";
 import { InternetIdentityConnect } from "./connect-identity";
 import { ConnectButton as EvmConnectButton } from "./connect-button";
-import { CheckCircle2, Loader2, ShieldCheck, Wallet } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, ShieldCheck, Wallet } from "lucide-react";
 import { Badge } from "@/app/ui/badge";
+import { toast } from "sonner";
 
 export default function LoginStepperDialog() {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, principal } = useStore();
   const { isConnected, chain } = useAccount();
   const [step, setStep] = useState<1 | 2>(1);
   const [open, setOpen] = useState(false);
@@ -83,8 +84,18 @@ export default function LoginStepperDialog() {
         <div className="flex flex-col gap-4 mt-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <ShieldCheck className="w-4 h-4 text-blue-500" />
-            Connect Internet Identity
+            <p> Connect Internet Identity</p>
+            {isAuthenticated && (
+              <Copy
+                onClick={async () => {
+                  await navigator.clipboard.writeText(principal ?? "");
+                  toast.success("Copied to clipboard");
+                }}
+                className="w-4 h-4 text-green-500 ms-4"
+              />
+            )}
           </div>
+
           <InternetIdentityConnect className="w-full" />
         </div>
 
