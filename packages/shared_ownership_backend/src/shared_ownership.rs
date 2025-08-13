@@ -119,7 +119,7 @@ fn approve_proposal(id: u64) -> Result_ {
         proposal.approvals.insert(caller());
 
         if proposal.approvals.iter().any(is_helix_admin)
-            && proposal.approvals.iter().any(is_sns_admin)
+          // && proposal.approvals.iter().any(is_sns_admin)
         {
             proposal.status = SharedProposalStatus::Approved;
         }
