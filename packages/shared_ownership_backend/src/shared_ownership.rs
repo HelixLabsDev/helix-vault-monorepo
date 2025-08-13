@@ -73,9 +73,9 @@ const HELIX_ADMINS: &[&str] = &[
     "vlasd-azdjd-gjqf7-fvfcz-m2l6t-4wqin-two5b-xewmr-ihtot-s6zqw-iqe",
 ];
 
-const SNS_ADMINS: &[&str] = &[
-    "fr355-aqdyv-mtaza-ae4um-glwpv-55ptp-b5z5a-4cyqm-qhk7z-xpvx7-fqe",
-];
+// const SNS_ADMINS: &[&str] = &[
+//     "fr355-aqdyv-mtaza-ae4um-glwpv-55ptp-b5z5a-4cyqm-qhk7z-xpvx7-fqe",
+// ];
 
 #[update]
 fn submit_proposal(title: String, description: String, action: SharedProposalAction) -> u64 {
