@@ -16,7 +16,7 @@ cat > upgrade_args.did <<EOF
   "Upgrading the for Test vault with new code",
   variant {
     UpgradeVault = record {
-      vault_id = principal "dmalx-m4aaa-aaaaa-qaanq-cai";
+      vault_id = principal "osvil-vyaaa-aaaaj-qnsba-cai";
       wasm_hash = "$wasm"
     }
   }

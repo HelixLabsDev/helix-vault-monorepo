@@ -26,6 +26,10 @@ import { _userDetail } from "@/lib/axios/_user_detail";
 import { VaultUser } from "../icp/page";
 // import { tvlType } from "../icp/page";
 import { DepositProgressDialog, initialSteps } from "./progress-bar";
+import {
+  initialStepsWithdraw,
+  WithdrawProgressDialog,
+} from "./progress-bar-withdraw";
 
 interface DepositStep {
   id: string;
@@ -58,6 +62,7 @@ export default function StakeDemo({
   } = useStore();
 
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
+  const [isWithdraw, setIsWithdraw] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>("");
   const [steps, setSteps] = useState<DepositStep[]>(initialSteps);
   const [isOpen, setIsOpen] = useState(false);
@@ -119,140 +124,144 @@ export default function StakeDemo({
       return;
     }
 
+    if (!isAuthenticated) {
+      toast.error("Please ensure you're logged in");
+      return;
+    }
+
     const units = tokensToUnits(amount, 8);
     if (!units) {
       toast.error("Please enter a valid amount");
       return;
     }
 
-    const toastId = toast.loading(
-      `${type.charAt(0).toUpperCase() + type.slice(1)} in progress...`
-    );
-
     try {
       const userPrincipal = Principal.fromText(principal);
       const amountNat = convertToNat(amount);
 
+      setIsProcessing(true);
+
       if (type === "deposit") {
         setIsOpen(true);
-        setIsProcessing(true);
         setSteps(initialSteps); // Reset steps
         updateStepStatus("approve", "in-progress");
-        const allowanceResult = await ledgerActor.icrc2_allowance({
-          account: { owner: userPrincipal, subaccount: [] },
-          spender: {
-            owner: Principal.fromText(vaultAddress),
-            subaccount: [],
-          },
-        });
-
-        const currentAllowance = BigInt(allowanceResult.allowance.toString());
-
-        if (currentAllowance < units) {
-          const feeAmount = BigInt(10000);
-          const approveAmount = units + feeAmount;
-
-          toast.loading("Approving transaction...", { id: toastId });
-
-          const approveRes = await ledgerActor.icrc2_approve({
-            fee: [feeAmount],
-            from_subaccount: [],
-            memo: [],
-            created_at_time: [],
-            amount: approveAmount,
-            expected_allowance: [],
-            expires_at: [],
+        try {
+          const allowanceResult = await ledgerActor.icrc2_allowance({
+            account: { owner: userPrincipal, subaccount: [] },
             spender: {
               owner: Principal.fromText(vaultAddress),
               subaccount: [],
             },
           });
 
-          if ("Err" in approveRes) {
-            toast.error(`Approval failed: ${JSON.stringify(approveRes.Err)}`, {
-              id: toastId,
+          const currentAllowance = BigInt(allowanceResult.allowance.toString());
+
+          if (currentAllowance < units) {
+            const feeAmount = BigInt(10000);
+            const approveAmount = units + feeAmount;
+
+            const approveRes = await ledgerActor.icrc2_approve({
+              fee: [feeAmount],
+              from_subaccount: [],
+              memo: [],
+              created_at_time: [],
+              amount: approveAmount,
+              expected_allowance: [],
+              expires_at: [],
+              spender: {
+                owner: Principal.fromText(vaultAddress),
+                subaccount: [],
+              },
             });
+
+            if ("Err" in approveRes) {
+              toast.error(`Approval failed: ${JSON.stringify(approveRes.Err)}`);
+              updateStepStatus("approve", "failed");
+              return;
+            }
+
+            updateStepStatus("approve", "completed");
+          }
+
+          updateStepStatus("deposit", "in-progress");
+          // Perform Deposit
+
+          const res: any = await actor.deposit_icrc1(amountNat, address ?? "");
+
+          // Check if it's a success
+          if (!res || typeof res.Ok !== "string") {
+            const errorMessage = res?.Err || "Unknown error during deposit";
+            toast.error(`Deposit failed: ${JSON.stringify(errorMessage)}`);
+            updateStepStatus("deposit", "failed");
             return;
           }
 
-          updateStepStatus("approve", "completed");
-        }
+          const match = res.Ok.match(/0x[a-fA-F0-9]{64}/);
 
-        updateStepStatus("deposit", "in-progress");
-        // Perform Deposit
-        toast.loading("Depositing...", { id: toastId });
+          if (!match) {
+            toast.error("Tx hash not found in response");
+            return;
+          }
 
-        const res: any = await actor.deposit_icrc1(amountNat, address ?? "");
+          updateStepStatus("deposit", "completed");
 
-        // Check if it's a success
-        if (!res || typeof res.Ok !== "string") {
-          const errorMessage = res?.Err || "Unknown error during deposit";
-          toast.error(`Deposit failed: ${JSON.stringify(errorMessage)}`, {
-            id: toastId,
+          updateStepStatus("confirm", "in-progress");
+
+          if (!res || "Err" in res) {
+            toast.error(`Deposit failed: ${JSON.stringify(res.Err || res)}`);
+            updateStepStatus("confirm", "failed");
+            return;
+          }
+
+          const { status, message } = await _depositEthereum({
+            address: userPrincipal.toText(),
+            amount: Number(amount || 0),
+            transactionHash: match[0],
+            tokenId: `${vaultAddress}`,
           });
-          return;
+          if (status > 200) {
+            updateStepStatus("confirm", "failed");
+            return toast.error(message);
+          }
+          updateTransaction();
+          setAmount("");
+
+          updateStepStatus("confirm", "completed");
+
+          updateStepStatus("complete", "in-progress");
+          toast.success(
+            <div>
+              <Link href={`https://holesky.etherscan.io/tx/${match[0]}`}>
+                Transaction Hash
+              </Link>
+            </div>
+          );
+          updateStepStatus("complete", "completed", match[0]);
+        } catch (err: any) {
+          // toast.error(err, { id: toastId });
+          console.log("err", err);
+
+          updateStepStatus("approve", "failed");
+          updateStepStatus("deposit", "failed");
+          updateStepStatus("confirm", "failed");
+          updateStepStatus("complete", "failed");
         }
-
-        const match = res.Ok.match(/0x[a-fA-F0-9]{64}/);
-
-        if (!match) {
-          toast.error("Tx hash not found in response", { id: toastId });
-          return;
-        }
-
-        updateStepStatus("deposit", "completed");
-
-        console.log("Deposit Response:", res);
-        console.log("address: ", address);
-
-        if (!res || "Err" in res) {
-          toast.error(`Deposit failed: ${JSON.stringify(res.Err || res)}`, {
-            id: toastId,
-          });
-          return;
-        }
-
-        updateStepStatus("confirm", "in-progress");
-
-        const { status, message } = await _depositEthereum({
-          address: userPrincipal.toText(),
-          amount: Number(amount || 0),
-          transactionHash: match[0],
-          tokenId: `${vaultAddress}`,
-        });
-        if (status > 200) return toast.error(message, { id: toastId });
-        updateTransaction();
-        setAmount("");
-
-        updateStepStatus("confirm", "completed");
-
-        console.log("status", status);
-        console.log("message", message);
-        toast.success(
-          <div>
-            <Link href={`https://holesky.etherscan.io/tx/${match[0]}`}>
-              Transaction Hash
-            </Link>
-          </div>,
-          { id: toastId }
-        );
-        updateStepStatus("complete", "completed");
-
-        setIsProcessing(false);
         // setIsOpen(false);
       } else {
-        // Perform Withdrawal
-        toast.loading("Withdrawing...", { id: toastId });
+        setIsWithdraw(true);
+        setSteps(initialStepsWithdraw); // Reset steps
 
         try {
-          // if (isConnected) return toast.error("Please connect wallet");
+          updateStepStatus("burn", "in-progress");
           const { hstICPWriteContract } = await getHstICPContract();
 
           const tx = await hstICPWriteContract?.burn(parse18(amount));
           await tx.wait();
-          console.log("tx", tx);
+          updateStepStatus("burn", "completed");
           const expected_eth_from = address ?? "";
           const expected_contract = hstICPContract;
+
+          updateStepStatus("checking", "in-progress");
 
           // Validation
           if (!/^\d*\.?\d*$/.test(amount)) {
@@ -265,12 +274,12 @@ export default function StakeDemo({
             throw new Error("Invalid EVM amount: cannot convert to base units");
           }
 
+          updateStepStatus("checking", "completed");
+
           // ✅ 8-decimal BigInt (for hICP withdraw)
           const withdraw_amount_8dec = convertToNat(amount); // BigInt
 
-          // Debug
-          console.log("expected_amount_18dec:", expected_amount_18dec);
-          console.log("withdraw_amount_8dec:", withdraw_amount_8dec.toString());
+          updateStepStatus("withdrawing", "in-progress");
 
           const res = await actor.unlock_icrc1(
             tx.hash,
@@ -281,16 +290,16 @@ export default function StakeDemo({
           );
 
           if (!res || "Err" in res) {
-            toast.error(
-              `Withdrawal failed: ${JSON.stringify(res.Err || res)}`,
-              {
-                id: toastId,
-              }
-            );
+            toast.error(`Withdrawal failed: ${JSON.stringify(res.Err || res)}`);
+
+            updateStepStatus("withdrawing", "failed");
             return;
           }
 
-          console.log("tx?.hash", tx?.hash);
+          updateStepStatus("withdrawing", "completed");
+
+          updateStepStatus("complete", "in-progress");
+
           const { status, message } = await _withdrawEthereum({
             address: userPrincipal.toText(),
             amount: Number(amount || 0),
@@ -298,33 +307,42 @@ export default function StakeDemo({
             tokenId: `${vaultAddress}`,
           });
 
-          if (status > 200) return toast.error(message, { id: toastId });
+          if (status > 200) {
+            updateStepStatus("complete", "failed");
+            return toast.error(message);
+          }
 
           updateTransaction();
           setAmount("");
+          updateStepStatus("complete", "completed", tx.hash);
           toast.success(
             <div>
               Withdraw Successful!{" "}
               <Link href={`https://holesky.etherscan.io/tx/${tx.hash}`}>
                 Transaction Hash
               </Link>
-            </div>,
-            { id: toastId }
+            </div>
           );
         } catch (err: any) {
-          toast.error(err, { id: toastId });
+          // toast.error(err, { id: toastId });
           console.log("err", err);
+
+          updateStepStatus("burn", "failed");
+          updateStepStatus("checking", "failed");
+          updateStepStatus("withdrawing", "failed");
+          updateStepStatus("complete", "failed");
         }
       }
 
+      setIsProcessing(false);
       await fetchBalances();
     } catch (error: any) {
       console.error(`${type} failed:`, error);
+
       toast.error(
         `${type.charAt(0).toUpperCase() + type.slice(1)} failed: ${
           error.message || JSON.stringify(error)
-        }`,
-        { id: toastId }
+        }`
       );
     }
   };
@@ -340,28 +358,6 @@ export default function StakeDemo({
       )
     );
   };
-
-  // const handleDepositProcess = async () => {
-  //   setIsProcessing(true);
-  //   setSteps(initialSteps); // Reset steps
-
-  //   try {
-  //     // Step 3: Confirmation
-  //     updateStepStatus("confirm", "in-progress");
-  //     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate confirmation wait
-  //     updateStepStatus("confirm", "completed");
-
-  //     // Step 4: Complete
-  //     updateStepStatus("complete", "in-progress");
-  //     await new Promise((resolve) => setTimeout(resolve, 1000));
-  //     updateStepStatus("complete", "completed");
-  //   } catch (error) {
-  //     console.error("Deposit failed:", error);
-  //     updateStepStatus(inProgressStep?.id || "approve", "failed");
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
 
   const handleAmountChange = (value: string) => {
     const sanitizedValue = value.replace(/[^0-9.]/g, "");
@@ -421,7 +417,16 @@ export default function StakeDemo({
         isOpen={isOpen}
         onOpenChange={setIsOpen}
         amount={amount}
-        tokenSymbol="ICP"
+        tokenSymbol="hICP"
+        steps={steps}
+        isProcessing={isProcessing}
+      />
+
+      <WithdrawProgressDialog
+        isOpen={isWithdraw}
+        onOpenChange={setIsWithdraw}
+        amount={amount}
+        tokenSymbol="hICP"
         steps={steps}
         isProcessing={isProcessing}
       />

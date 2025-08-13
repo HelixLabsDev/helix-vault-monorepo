@@ -13,7 +13,7 @@ import {
 } from "@/app/ui/dialog";
 import { Button } from "@/app/ui/button";
 
-interface DepositStep {
+interface WithdrawStep {
   id: string;
   title: string;
   description: string;
@@ -22,47 +22,47 @@ interface DepositStep {
   estimatedTime?: string;
 }
 
-interface DepositProgressDialogProps {
+interface WithdrawProgressDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   amount?: string;
   tokenSymbol?: string;
-  steps?: DepositStep[];
+  steps?: WithdrawStep[];
   isProcessing?: boolean;
 }
 
-export const initialSteps: DepositStep[] = [
+export const initialStepsWithdraw: WithdrawStep[] = [
   {
-    id: "approve",
-    title: "Depositing",
-    description: "Transferring tokens to vault",
+    id: "burn",
+    title: "Burning",
+    description: "Burning hstICP on Ethereum (Holesky Testnet)",
     status: "pending",
-    estimatedTime: "",
+    estimatedTime: "~30s",
   },
   {
-    id: "deposit",
-    title: "Bridging to Ethereum (Holesky Testnet)",
-    description: "Minting hstICP natively on Ethereum Holesky",
+    id: "checking",
+    title: "Validating",
+    description: "Verifying burn transaction via trustless Chain Fusion",
     status: "pending",
     estimatedTime: "~45s",
   },
   {
-    id: "confirm",
-    title: "Validating",
-    description: "Verifying Ethereum transaction via trustless Chain Fusion",
+    id: "withdrawing",
+    title: "Releasing",
+    description: "Transferring nICP from the vault to your ICP wallet",
     status: "pending",
     estimatedTime: "",
   },
   {
     id: "complete",
     title: "Complete",
-    description: "Deposit and bridge successfully processed",
+    description: "Burn and release successfully processed",
     status: "pending",
     estimatedTime: "",
   },
 ];
 
-const StepIcon = ({ status }: { status: DepositStep["status"] }) => {
+const StepIcon = ({ status }: { status: WithdrawStep["status"] }) => {
   const iconProps = { className: "w-5 h-5" };
 
   switch (status) {
@@ -101,14 +101,14 @@ const ProgressBar = ({ progress }: { progress: number }) => {
   );
 };
 
-export const DepositProgressDialog = ({
+export const WithdrawProgressDialog = ({
   isOpen,
   onOpenChange,
   amount = "0",
   tokenSymbol = "ICP",
-  steps = initialSteps,
+  steps = initialStepsWithdraw,
   isProcessing,
-}: DepositProgressDialogProps) => {
+}: WithdrawProgressDialogProps) => {
   const completedSteps = steps.filter(
     (step) => step.status === "completed"
   ).length;
@@ -126,7 +126,7 @@ export const DepositProgressDialog = ({
         onInteractOutside={(e) => !canClose && e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Token Deposit</DialogTitle>
+          <DialogTitle>Token Withdraw</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -134,14 +134,14 @@ export const DepositProgressDialog = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-medium text-foreground">
-                Deposit Progress
+                Withdraw Progress
               </h3>
               <Badge variant="outline" className="text-xs">
                 {completedSteps}/{steps.length} Complete
               </Badge>
             </div>
             <div className="text-sm text-muted-foreground">
-              Depositing {amount} {tokenSymbol}
+              Withdrawing {amount} {tokenSymbol}
             </div>
           </div>
 
