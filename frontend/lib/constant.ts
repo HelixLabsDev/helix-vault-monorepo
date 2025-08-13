@@ -1,4 +1,4 @@
-const vaultActorAddress = "dccg7-xmaaa-aaaaa-qaamq-cai";
+const vaultActorAddress = "osvil-vyaaa-aaaaj-qnsba-cai";
 const ledgerActorAddress = "5rm7o-daaaa-aaaag-auffa-cai";
 const IDENTITY_URL = "https://identity.ic0.app/";
 const coreVaultPrincipal = "zb2a6-yyaaa-aaaaj-qnr7a-cai";
