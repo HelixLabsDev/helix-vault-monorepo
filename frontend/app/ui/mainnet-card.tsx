@@ -15,7 +15,7 @@ export default function MainnetCard({ data }: { data: any[] }) {
         prefetch
         key={id}
         href="/icp"
-        className="p-4 md:p-8 group border flex flex-col gap-6 cursor-pointer transition-all col-span-1"
+        className="p-4 md:p-8 group border-2 flex flex-col gap-6 cursor-pointer transition-all col-span-1"
       >
         <div
           className="md:p-0 p-6"
@@ -43,11 +43,11 @@ export default function MainnetCard({ data }: { data: any[] }) {
                   alt="icp"
                   width={24}
                   height={11.5}
-                  className="h-auto w-8 ms-2"
+                  className="h-auto w-6 ms-2"
                 />
               </picture>
               <div className="relative cursor-pointer items-center justify-center">
-                <p className="text-2xl font-semibold">EIGENFI</p>
+                <p className="text-2xl font-semibold">Helix Vault</p>
               </div>
             </div>
             <div>
@@ -65,7 +65,9 @@ export default function MainnetCard({ data }: { data: any[] }) {
               </div>
               <div className="flex flex-col justify-between">
                 <p className="text-foreground/70 text-base">Total Deposits</p>{" "}
-                <div className="text-end w-full text-xl">{el.lockedAmount}</div>
+                <div className="text-end w-full text-xl">
+                  {el.lockedAmount.toLocaleString()}
+                </div>
               </div>
             </div>
 

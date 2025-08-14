@@ -3,14 +3,13 @@
 
 import GradientText from "@/app/ui/gradient-text";
 import MainnetCard from "@/app/ui/mainnet-card";
-import VerticalBarsNoise from "@/app/ui/noise-bg";
+// import VerticalBarsNoise from "@/app/ui/noise-bg";
 import { useStoreCore } from "@/lib/storeCoreVault";
 import { useEffect, useState } from "react";
-// import { GovernanceProposal } from "@/declarations/core_vault_backend/core_vault_backend.did";
 import { Skeleton } from "./ui/skeleton";
 import { _users, _usersTVL } from "@/lib/axios/_user_detail";
-// import OnboardCard from "./ui/onboard";
-//
+import OscillatingHatching from "./ui/oscil";
+
 export default function Home() {
   function formatNumber(num: number): string {
     if (num >= 1_000_000_000_000) {
@@ -124,7 +123,7 @@ export default function Home() {
             </div>{" "}
           </div>
         </div>
-        <VerticalBarsNoise />
+        <OscillatingHatching />
       </div>
 
       {/* <OnboardCard /> */}

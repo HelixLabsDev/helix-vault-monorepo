@@ -24,7 +24,6 @@ import { StatsSection } from "./stats-action";
 import { hstICPContract } from "../../lib/constant";
 import { _userDetail } from "@/lib/axios/_user_detail";
 import { VaultUser } from "../icp/page";
-// import { tvlType } from "../icp/page";
 import { DepositProgressDialog, initialSteps } from "./progress-bar";
 import {
   initialStepsWithdraw,
@@ -515,7 +514,9 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
         </div>
       </div>
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
-        <span className="py-1 text-foreground/80">{balance} hICP</span>
+        <span className="py-1 text-foreground/80">
+          {balance?.toLocaleString()} hICP
+        </span>
         <Button
           variant="ghost"
           size="xs"

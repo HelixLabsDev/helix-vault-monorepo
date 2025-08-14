@@ -58,7 +58,7 @@ export function InternetIdentityConnect({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthenticated]);
 
   // Connect II
   async function login() {
