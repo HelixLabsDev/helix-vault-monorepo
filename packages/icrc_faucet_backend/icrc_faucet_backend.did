@@ -1,13 +1,18 @@
 type Account = record { owner : principal; subaccount : opt blob };
 
+type PowConfig = record { leading_zero_bits : nat8 };
+
 type FaucetEventKind = variant {
   TokensClaimed : record { to : Account; amount : nat };
+  TokensDeposited : record { from : Account; amount : nat };
   DailyAllowanceUpdated : record { old : nat; new_ : nat };
   Withdrawn : record { to : Account; amount : nat };
   Paused : bool;
   MaxDailyTotalSet : record { max : opt nat };
   PowSet : record { bits : opt nat8 };
   OwnerChanged : record { old : principal; new_ : principal };
+  LedgerIdUpdated : record { old : principal; new_ : principal };
+  ClaimIntervalUpdated : record { old_nanos : nat64; new_nanos : nat64 };
 };
 
 type FaucetEvent = record {
@@ -16,15 +21,15 @@ type FaucetEvent = record {
   kind : FaucetEventKind;
 };
 
-type PowConfig = record { leading_zero_bits : nat8 };
-
 type FaucetConfig = record {
   owner : principal;
   ledger_id : principal;
   daily_allowance : nat;
+  claim_interval_nanos : nat64;
   paused : bool;
   pow : opt PowConfig;
   max_daily_total : opt nat;
+  max_lifetime_per_principal : opt nat;
 };
 
 type ClaimResult = record {
@@ -35,23 +40,30 @@ type ClaimResult = record {
 
 type Result = variant { Ok; Err : text };
 type NatResult = variant { Ok : nat; Err : text };
+type NatOptResult = variant { Ok : opt nat; Err : text };
 type ClaimResultResult = variant { Ok : ClaimResult; Err : text };
 
 service : {
   // Updates
   set_daily_allowance : (nat) -> (Result);
+  set_claim_interval_nanos : (nat64) -> (Result);
   set_paused : (bool) -> (Result);
   set_max_daily_total : (opt nat) -> (Result);
   set_pow_bits : (opt nat8) -> (Result);
   transfer_ownership : (principal) -> (Result);
   set_ledger_id : (principal) -> (Result);
+  withdraw_tokens : (nat, opt Account) -> (NatOptResult);
   claim_tokens : (opt nat64) -> (ClaimResultResult);
-  withdraw_tokens : (nat, opt Account) -> (NatResult);
   faucet_balance : () -> (NatResult);
 
   // Queries
   get_config : () -> (FaucetConfig) query;
   get_last_claim_of : (principal) -> (opt nat64) query;
+  get_next_claim_of : (opt principal) -> (opt nat64) query;
+  get_lifetime_claimed_of : (principal) -> (nat) query;
+  get_daily_total : (opt nat64) -> (nat) query;
   recent_events : (nat64, nat64) -> (vec FaucetEvent) query;
+  faucet_account : () -> (Account) query;
+  get_pow_salt : () -> (vec nat8) query;
   version : () -> (text) query;
 }
