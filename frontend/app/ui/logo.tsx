@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export function Logo() {
   return (
     <div className="mx-auto size-fit flex items-center space-x-2">
@@ -23,13 +21,15 @@ export function Logo() {
           fill="currentColor"
         />
       </svg>
-      <Image
-        src="/logo-typo.png"
-        alt="Helix Labs"
-        width="90"
-        height="20"
-        className="h-5 w-auto dark:invert invert-[15%]"
-      />
+      <picture>
+        <img
+          src="/logo-typo.png"
+          alt="Helix Labs"
+          width="80"
+          height="16"
+          className="h-4 w-auto dark:invert invert-[15%]"
+        />
+      </picture>
     </div>
   );
 }

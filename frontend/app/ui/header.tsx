@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ModeToggle } from "./theme-toggle";
+import ThemeToggle from "./theme-toggle";
 import { Logo } from "./logo";
 import LoginDialog from "./connect-wallets";
 
@@ -18,24 +18,21 @@ export default function Header() {
               Governance
             </div>
           </Link>
-          <Link
-            target={"_blank"}
-            href="https://docs.helixlabs.org/getting-started-on-helix/eigenfi-vaults"
-          >
+          <Link href="/bridge">
             <div className="text-foreground duration-300 ease-in-out hover:text-foreground/70">
-              Docs
+              Bridge
             </div>
           </Link>
-          <Link href="/litepaper.pdf" download={true}>
+          {/* <Link href="/litepaper.pdf" download={true}>
             <div className="text-foreground duration-300 ease-in-out hover:text-foreground/70">
               Litepaper
             </div>
-          </Link>
+          </Link> */}
         </div>
       </div>
       <div className="flex gap-3 items-center">
         <LoginDialog />
-        <ModeToggle />
+        <ThemeToggle />
       </div>
     </div>
   );

@@ -1,24 +1,20 @@
-// import CircularText from "@/app/ui/circular-test";
 import Link from "next/link";
 import { FaXTwitter, FaGithub, FaDiscord, FaLinkedin } from "react-icons/fa6";
+import { SpinningText } from "./circular-test";
 
 export default function Footer() {
   return (
     <div className="flex px-6 justify-between items-center w-full max-w-5xl mx-auto">
-      <p className="w-[152px] text-muted-foreground/80">All Rights Reserved</p>
+      <p className="w-[152px] text-muted-foreground/80">
+        All Rights Reserved @2025
+      </p>
 
       <Link
         href="https://helixlabs.org/"
         target="_blank"
         className="py-4 text-muted-foreground/90"
       >
-        {/* <CircularText
-          text="HELIX*LABS*2025*"
-          onHover="goBonkers"
-          spinDuration={20}
-          className=""
-        /> */}
-        Helix Labs
+        <SpinningText>Helix • Labs</SpinningText>
       </Link>
 
       <div className="gap-6 font-thin text-muted-foreground/70 flex items-center">
