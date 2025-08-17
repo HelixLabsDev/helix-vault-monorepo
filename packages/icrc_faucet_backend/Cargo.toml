@@ -1,0 +1,17 @@
+[package]
+name = "icrc_faucet_backend"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+name = "icrc_faucet_backend"
+path = "src/lib.rs"
+
+[dependencies]
+ic-cdk = "0.14"
+ic-cdk-macros = "0.14"
+candid = "0.10"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"

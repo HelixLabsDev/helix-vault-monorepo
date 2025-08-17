@@ -1,0 +1,57 @@
+type Account = record { owner : principal; subaccount : opt blob };
+
+type FaucetEventKind = variant {
+  TokensClaimed : record { to : Account; amount : nat };
+  DailyAllowanceUpdated : record { old : nat; new_ : nat };
+  Withdrawn : record { to : Account; amount : nat };
+  Paused : bool;
+  MaxDailyTotalSet : record { max : opt nat };
+  PowSet : record { bits : opt nat8 };
+  OwnerChanged : record { old : principal; new_ : principal };
+};
+
+type FaucetEvent = record {
+  ts_nanos : nat64;
+  actor : principal;
+  kind : FaucetEventKind;
+};
+
+type PowConfig = record { leading_zero_bits : nat8 };
+
+type FaucetConfig = record {
+  owner : principal;
+  ledger_id : principal;
+  daily_allowance : nat;
+  paused : bool;
+  pow : opt PowConfig;
+  max_daily_total : opt nat;
+};
+
+type ClaimResult = record {
+  amount : nat;
+  block_index : opt nat;
+  next_claim_ns : nat64;
+};
+
+type Result = variant { Ok; Err : text };
+type NatResult = variant { Ok : nat; Err : text };
+type ClaimResultResult = variant { Ok : ClaimResult; Err : text };
+
+service : {
+  // Updates
+  set_daily_allowance : (nat) -> (Result);
+  set_paused : (bool) -> (Result);
+  set_max_daily_total : (opt nat) -> (Result);
+  set_pow_bits : (opt nat8) -> (Result);
+  transfer_ownership : (principal) -> (Result);
+  set_ledger_id : (principal) -> (Result);
+  claim_tokens : (opt nat64) -> (ClaimResultResult);
+  withdraw_tokens : (nat, opt Account) -> (NatResult);
+  faucet_balance : () -> (NatResult);
+
+  // Queries
+  get_config : () -> (FaucetConfig) query;
+  get_last_claim_of : (principal) -> (opt nat64) query;
+  recent_events : (nat64, nat64) -> (vec FaucetEvent) query;
+  version : () -> (text) query;
+}

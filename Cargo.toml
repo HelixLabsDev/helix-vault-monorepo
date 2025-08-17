@@ -5,4 +5,12 @@ members = [
   "packages/helix_vault_backend",
   "packages/shared_ownership_backend",
   "packages/evm_rpc_backend",
+  "packages/icrc_faucet_backend",
 ]
+
+[profile.release]
+lto = true
+opt-level = "s"
+codegen-units = 1
+strip = true
+panic = "abort"

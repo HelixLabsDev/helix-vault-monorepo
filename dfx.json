@@ -62,6 +62,19 @@
       "type": "pull",
       "id": "7hfb6-caaaa-aaaar-qadga-cai"
     },
+    "icrc_faucet_backend": {
+      "type": "custom",
+      "package": "icrc_faucet_backend",
+      "candid": "packages/icrc_faucet_backend/icrc_faucet_backend.did",
+      "wasm": "target/wasm32-unknown-unknown/release/icrc_faucet_backend.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --package icrc_faucet_backend --release",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "value": "packages/icrc_faucet_backend/icrc_faucet_backend.did"
+        }
+      ]
+    },
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -82,7 +95,7 @@
   },
   "networks": {
     "local": {
-      "bind": "127.0.0.1:4943",
+      "bind": "127.0.0.1:4944",
       "type": "ephemeral"
     },
     "ic": {
