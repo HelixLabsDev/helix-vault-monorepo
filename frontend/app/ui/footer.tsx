@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { FaXTwitter, FaGithub, FaDiscord, FaLinkedin } from "react-icons/fa6";
-import { SpinningText } from "./circular-test";
+// import { SpinningText } from "./circular-test";
 
 export default function Footer() {
   return (
     <div className="flex px-6 justify-between items-center w-full max-w-5xl mx-auto">
-      <p className="w-[152px] text-muted-foreground/80">
-        All Rights Reserved @2025
-      </p>
+      <p className="w-[152px] text-muted-foreground/80">All Rights Reserved</p>
 
-      <Link
+      {/* <Link
         href="https://helixlabs.org/"
         target="_blank"
         className="py-4 text-muted-foreground/90"
       >
         <SpinningText>Helix • Labs</SpinningText>
-      </Link>
+      </Link> */}
+
+      <div>Helix Labs</div>
 
       <div className="gap-6 font-thin text-muted-foreground/70 flex items-center">
         {socials.map((social) => (

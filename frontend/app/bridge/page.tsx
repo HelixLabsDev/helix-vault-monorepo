@@ -37,8 +37,8 @@ export default function BridgePage() {
   const [toChain, setToChain] = useState(chains[1].name);
 
   return (
-    <div className="min-h-screen flex gap-8 items-start font-sans justify-center p-4">
-      <Card className="w-full max-w-xl text-white shadow-lg">
+    <div className="h-full md:flex-row flex-col flex gap-8 items-start font-sans justify-center py-14">
+      <Card className="w-full max-w-xl text-foreground shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
             Bridge Coming Soon...
@@ -202,7 +202,6 @@ export default function BridgePage() {
           <div className="flex justify-between text-xs w-full">
             <span>Native assets</span>
             <span>Better yields</span>
-            <span>No wallet needed</span>
           </div>
         </CardFooter>
       </Card>

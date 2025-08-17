@@ -39,7 +39,7 @@ export function SpinningText({
   style,
   className,
   reverse = false,
-  radius = 5,
+  radius = 2,
   transition,
   variants,
 }: SpinningTextProps) {

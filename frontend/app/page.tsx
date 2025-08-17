@@ -3,12 +3,12 @@
 
 import GradientText from "@/app/ui/gradient-text";
 import MainnetCard from "@/app/ui/mainnet-card";
-// import VerticalBarsNoise from "@/app/ui/noise-bg";
 import { useStoreCore } from "@/lib/storeCoreVault";
 import { useEffect, useState } from "react";
 import { Skeleton } from "./ui/skeleton";
 import { _users, _usersTVL } from "@/lib/axios/_user_detail";
-import OscillatingHatching from "./ui/oscil";
+import VerticalBarsNoise from "./ui/noise-bg";
+// import OscillatingHatching from "./ui/oscil";
 
 export default function Home() {
   function formatNumber(num: number): string {
@@ -123,7 +123,7 @@ export default function Home() {
             </div>{" "}
           </div>
         </div>
-        <OscillatingHatching />
+        <VerticalBarsNoise />
       </div>
 
       {/* <OnboardCard /> */}

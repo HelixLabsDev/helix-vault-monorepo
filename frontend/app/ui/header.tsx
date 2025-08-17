@@ -9,7 +9,7 @@ export default function Header() {
   return (
     <div className="mx-auto my-8 py-4 px-6 fixed top-0 bg-zinc-50 dark:bg-[#01100c] z-50 flex justify-between items-center max-w-5xl w-full">
       <div className="flex gap-6 items-center">
-        <Link href={"/"} className="h-4 w-auto">
+        <Link href={"/"}>
           <Logo />
         </Link>
         <div className="hidden md:flex font-medium text-sm gap-6 w-full items-center justify-center">
@@ -21,6 +21,11 @@ export default function Header() {
           <Link href="/bridge">
             <div className="text-foreground duration-300 ease-in-out hover:text-foreground/70">
               Bridge
+            </div>
+          </Link>
+          <Link href="/faucet">
+            <div className="text-foreground duration-300 ease-in-out hover:text-foreground/70">
+              Faucet
             </div>
           </Link>
           {/* <Link href="/litepaper.pdf" download={true}>

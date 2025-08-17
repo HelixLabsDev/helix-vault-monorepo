@@ -7,11 +7,13 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
 import { createActor as createLedgerActor } from "@/declarations/icrc1-ledger"; // Ledger actor
-import { createActor as createCoreVault } from "@/declarations/core_vault_backend"; // Ledger actor
+import { createActor as createCoreVault } from "@/declarations/core_vault_backend"; // Ledger actorr
+import { createActor as createFaucetVault } from "@/declarations/icrc_faucet_backend"; // Ledger actorr
 import { Button } from "./button";
 import { useStore } from "@/lib/store";
 import {
   coreVaultPrincipal,
+  faucetActorAddress,
   IDENTITY_URL,
   ledgerActorAddress,
   vaultActorAddress,
@@ -28,6 +30,7 @@ const InternetIdentity = () => {
     principal,
     setPrincipal,
     setLedgerActor,
+    setFaucetActor,
   } = useStore();
 
   const {
@@ -71,6 +74,9 @@ const InternetIdentity = () => {
 
       const actorCore = createCoreVault(coreVaultPrincipal, { agent });
       setActorCore(actorCore);
+
+      const faucetActor = createFaucetVault(faucetActorAddress, { agent });
+      setFaucetActor(faucetActor);
 
       setIsAuthenticated(true);
       setPrincipal(identity.getPrincipal().toText().toString());

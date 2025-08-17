@@ -1,6 +1,6 @@
 export function Logo() {
   return (
-    <div className="mx-auto size-fit flex items-center space-x-2">
+    <div className="mx-auto flex items-center space-x-2 w-[100px] h-[18px]">
       <svg
         width="18"
         height="18"

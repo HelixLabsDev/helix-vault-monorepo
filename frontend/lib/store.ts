@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { AuthClient } from "@dfinity/auth-client";
 import { _SERVICE } from "@/declarations/helix_vault_backend/helix_vault_backend.did";
 import { _SERVICE as ledgerType } from "@/declarations/icrc1-ledger/icrc1-ledger.did";
+import { _SERVICE as faucetType } from "@/declarations/icrc_faucet_backend/icrc_faucet_backend.did";
 
 interface AppState {
   actor: _SERVICE | null;
@@ -12,6 +13,9 @@ interface AppState {
 
   ledgerActor: ledgerType | null;
   setLedgerActor: (ledgerActor: ledgerType | null) => void;
+
+  faucetActor: faucetType | null;
+  setFaucetActor: (faucetActor: faucetType | null) => void;
 
   isAuthenticated: boolean;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
@@ -40,6 +44,9 @@ export const useStore = create<AppState>((set) => ({
 
   ledgerActor: null,
   setLedgerActor: (ledgerActor) => set({ ledgerActor }),
+
+  faucetActor: null,
+  setFaucetActor: (faucetActor) => set({ faucetActor }),
 
   isAuthenticated: false,
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),

@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { convertNatToNumber } from "@/lib/utils";
-import { createActor as createFaucetActor } from "@/declarations/icrc_faucet_backend";
 import { Principal } from "@dfinity/principal";
 
 interface DropHistory {
@@ -31,8 +30,14 @@ const lsKey = (name: string, principal?: string | null) =>
   `${LS_PREFIX}:${name}:${principal ?? "anon"}`;
 
 export default function HICPTestnetFaucet() {
-  const { principal, setUserBalance, balance, vaultAddress, actor } =
-    useStore();
+  const {
+    principal,
+    setUserBalance,
+    userBalance,
+    ledgerActor,
+    faucetActor,
+    isAuthenticated,
+  } = useStore();
 
   const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
   const [history, setHistory] = useState<DropHistory[]>([]);
@@ -89,10 +94,13 @@ export default function HICPTestnetFaucet() {
 
   // ---------- Chain calls ----------
   const fetchBalance = async () => {
-    if (!principal || !vaultAddress || !actor) return;
+    if (!principal || !ledgerActor) return setMessage("Sign in first.");
     setLoading(true);
     try {
-      const bal = await actor.get_user_balance(Principal.fromText(principal));
+      const bal = await ledgerActor.icrc1_balance_of({
+        owner: Principal.fromText(principal),
+        subaccount: [],
+      });
       setUserBalance(convertNatToNumber(bal.toString()));
     } catch (err) {
       console.error("Error fetching vault balance:", err);
@@ -102,20 +110,23 @@ export default function HICPTestnetFaucet() {
   };
 
   const requestDrop = async () => {
-    if (!principal) return setMessage("Sign in first.");
+    if (!isAuthenticated || faucetActor == null)
+      return setMessage("Sign in first.");
     if (onCooldown) return;
 
     setLoading(true);
     setMessage(null);
     try {
-      const faucet = createFaucetActor(vaultAddress);
-      const amount = 5; // hICP per claim (adjust as needed)
-      const tx: any = await faucet.claim_tokens(null as any);
+      console.log("faucetActor", faucetActor);
+      const amount = 5;
+      const tx: any = await faucetActor.claim_tokens([]);
 
-      if (!tx) {
-        setMessage("Transaction failed");
+      if (tx.Err) {
+        setMessage(tx.Err || "Transaction failed");
         return;
       }
+
+      console.log("tx ->", tx);
 
       const entry: DropHistory = {
         id: crypto.randomUUID(),
@@ -146,7 +157,7 @@ export default function HICPTestnetFaucet() {
   }, [principal]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-4">
+    <div className="mx-auto w-full md:p-4 h-full py-14">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">hICP Testnet Faucet</h1>
@@ -169,7 +180,7 @@ export default function HICPTestnetFaucet() {
             <CardTitle>Request hICP</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex md:flex-row flex-col items-center justify-between gap-3">
               <div className="text-sm text-muted-foreground">
                 {onCooldown ? (
                   <span className="inline-flex items-center gap-1">
@@ -230,7 +241,9 @@ export default function HICPTestnetFaucet() {
             <div className="flex items-center justify-between">
               <span>Balance</span>
               <span className="font-medium">
-                {balance === null ? "—" : `${balance} hICP`}
+                {userBalance === null
+                  ? "—"
+                  : `${userBalance.toLocaleString()} hICP`}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -252,10 +265,12 @@ export default function HICPTestnetFaucet() {
                       className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"
                     >
                       <div className="truncate">
-                        {new Date(h.ts).toLocaleString()}
+                        {new Date(h.ts).toLocaleString().slice(0, 9)}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{h.amount} hICP</span>
+                        <span className="font-medium">
+                          {h.amount.toLocaleString()} hICP
+                        </span>
                         {h.tx && (
                           <a
                             href={h.tx}

@@ -7,6 +7,7 @@ import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
 import { createActor as createLedgerActor } from "@/declarations/icrc1-ledger";
 import { createActor as createCoreVault } from "@/declarations/core_vault_backend";
+import { createActor as createFaucetVault } from "@/declarations/icrc_faucet_backend";
 
 import { Button } from "@/app/ui/button";
 import { useStore } from "@/lib/store";
@@ -14,6 +15,7 @@ import { useStoreCore } from "@/lib/storeCoreVault";
 
 import {
   coreVaultPrincipal,
+  faucetActorAddress,
   IDENTITY_URL,
   ledgerActorAddress,
   vaultActorAddress,
@@ -40,6 +42,7 @@ export function InternetIdentityConnect({
     setPrincipal,
     setLedgerActor,
     vaultAddress,
+    setFaucetActor,
   } = useStore();
 
   const { setActorCore } = useStoreCore();
@@ -105,9 +108,12 @@ export function InternetIdentityConnect({
       agentOptions: { identity },
     });
 
+    const faucetActor = createFaucetVault(faucetActorAddress, { agent });
+
     setActor(actor);
     setActorCore(actorCore);
     setLedgerActor(ledgerActor);
+    setFaucetActor(faucetActor);
     setPrincipal(identity.getPrincipal().toText());
     setIsAuthenticated(true);
   }
