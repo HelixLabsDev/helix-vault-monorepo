@@ -12,7 +12,7 @@ use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromErro
 
 const ICRC1_LEDGER_CANISTER_ID: &str = "5rm7o-daaaa-aaaag-auffa-cai";
 const EVM_BACKEND_CANISTER_ID: &str = "zizlc-oqaaa-aaaaj-qnr6q-cai";
-const CONTRACT_ADDRESS: &str = "0x9DEa2BAfbD1b1dAe75be3De4ffc17B7415bC0DF4";
+const CONTRACT_ADDRESS: &str = "0xA198902f589BC4805ED4cA6089B9Fe46d1c9a866";
 
 #[derive(CandidType, Deserialize, Default, Clone)]
 struct UserBalance {
