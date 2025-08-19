@@ -478,45 +478,46 @@ function AmountInput({
   const getMax = () => Math.max(0, balance - fee);
 
   const handleChange = (value: string) => {
-    // 1) only digits + dot
+    // Remove all but digits and dot
     let s = value.replace(/[^0-9.]/g, "");
 
-    // 2) allow empty
+    // Allow empty
     if (s === "") {
       onChange("");
       return;
     }
 
-    // 3) single dot only
-    const firstDot = s.indexOf(".");
-    if (firstDot !== -1) {
-      s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
+    // Only one dot allowed
+    const dotIdx = s.indexOf(".");
+    if (dotIdx !== -1) {
+      s = s.slice(0, dotIdx + 1) + s.slice(dotIdx + 1).replace(/\./g, "");
     }
 
-    // 4) leading dot -> "0."
+    // Leading dot becomes "0."
     if (s.startsWith(".")) s = "0" + s;
 
-    // 5) limit to 8 decimals
+    // Limit decimals
     if (s.includes(".")) {
       const [w, f = ""] = s.split(".");
       s = `${w}.${f.slice(0, DECIMALS)}`;
     }
 
-    // 6) trim leading zeros on whole part
+    // Remove leading zeros from whole part (but keep "0" or "0.xxx")
     if (!s.includes(".")) {
       s = s.replace(/^0+(\d)/, "$1");
       if (s === "") s = "0";
     } else {
+      // If user types "0.01" or "00.01", keep the single leading zero
       const [w, f = ""] = s.split(".");
-      const ww = w.replace(/^0+(\d)/, "$1") || "0";
+      const ww = w === "" ? "0" : w.replace(/^0+(\d)/, "$1") || "0";
       s = `${ww}.${f}`;
     }
 
-    // 7) clamp to max
+    // Clamp to max
     const num = Number(s);
     const max = getMax();
     if (!isNaN(num) && num > max) {
-      s = max.toFixed(DECIMALS).replace(/\.?0+$/, ""); // trim trailing zeros
+      s = max.toFixed(DECIMALS).replace(/\.?0+$/, "");
     }
 
     onChange(s);
@@ -532,7 +533,6 @@ function AmountInput({
       <div className="absolute top-3 left-4 text-sm text-foreground/80">
         Amount
       </div>
-
       <Input
         id="pay"
         placeholder="0"
