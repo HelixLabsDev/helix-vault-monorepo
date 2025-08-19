@@ -460,72 +460,26 @@ interface AmountInputProps {
   balance?: number;
   fee?: number;
 }
-interface AmountInputProps {
-  amount: string;
-  onChange: (value: string) => void;
-  balance?: number; // human units
-  fee?: number; // human units
-}
-
-function AmountInput({
-  amount,
-  onChange,
-  balance = 0,
-  fee = 0,
-}: AmountInputProps) {
-  const DECIMALS = 8;
-
-  const getMax = () => Math.max(0, balance - fee);
-
+function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
   const handleChange = (value: string) => {
-    // Remove all but digits and dot
-    let s = value.replace(/[^0-9.]/g, "");
+    // Split whole + fractional part
+    const [whole, frac = ""] = value.split(".");
+    let newValue = value.includes(".") ? `${whole}.${frac.slice(0, 8)}` : whole; // limit 8 decimals only if dot exists
 
-    // Allow empty
-    if (s === "") {
-      onChange("");
-      return;
-    }
+    // Convert to number
+    const num = Number(newValue);
 
-    // Only one dot allowed
-    const dotIdx = s.indexOf(".");
-    if (dotIdx !== -1) {
-      s = s.slice(0, dotIdx + 1) + s.slice(dotIdx + 1).replace(/\./g, "");
-    }
+    // Calculate max spendable balance (balance - fee, but not < 0)
+    const bal = Number(balance) || 0;
+    const f = Number(fee) || 0;
+    const max = bal > f ? bal - f : 0;
 
-    // Leading dot becomes "0."
-    if (s.startsWith(".")) s = "0" + s;
-
-    // Limit decimals
-    if (s.includes(".")) {
-      const [w, f = ""] = s.split(".");
-      s = `${w}.${f.slice(0, DECIMALS)}`;
-    }
-
-    // Remove leading zeros from whole part (but keep "0" or "0.xxx")
-    if (!s.includes(".")) {
-      s = s.replace(/^0+(\d)/, "$1");
-      if (s === "") s = "0";
-    } else {
-      // If user types "0.01" or "00.01", keep the single leading zero
-      const [w, f = ""] = s.split(".");
-      const ww = w === "" ? "0" : w.replace(/^0+(\d)/, "$1") || "0";
-      s = `${ww}.${f}`;
-    }
-
-    // Clamp to max
-    const num = Number(s);
-    const max = getMax();
+    // If exceeds balance → clamp to max
     if (!isNaN(num) && num > max) {
-      s = max.toFixed(DECIMALS).replace(/\.?0+$/, "");
+      newValue = max.toString();
     }
 
-    onChange(s);
-  };
-
-  const handleMax = () => {
-    const max = getMax();
-    onChange(max.toFixed(DECIMALS).replace(/\.?0+$/, ""));
+    onChange(newValue);
   };
 
   return (
@@ -536,43 +490,43 @@ function AmountInput({
       <Input
         id="pay"
         placeholder="0"
-        type="text"
+        type="number"
         inputMode="decimal"
-        pattern="[0-9]*[.]?[0-9]*"
+        step="any"
         value={amount}
         onChange={(e) => handleChange(e.target.value)}
         onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
         onKeyDown={(e) => {
-          if (["ArrowUp", "ArrowDown"].includes(e.key)) e.preventDefault();
+          if (["ArrowUp", "ArrowDown", "e", "+", "-"].includes(e.key)) {
+            e.preventDefault();
+          }
         }}
-        className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
+        className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 
+          focus-visible:ring-offset-0 focus-visible:ring-[0.2px] 
+          h-[120px] py-[40px] px-4 md:text-[34px]"
       />
-
       <div className="absolute top-3 right-5">
         <picture className="flex items-center border rounded-full p-1 w-7 h-7 bg-primary/20">
-          <img
-            src="/ICP.png"
-            alt="icp"
-            width={24}
-            height={11.5}
-            className="h-auto w-6"
-          />
+          <img src="/ICP.png" alt="icp" className="h-auto w-6" />
         </picture>
       </div>
-
       <div className="absolute flex gap-1 bottom-4 left-4 text-xs text-muted-foreground/50">
-        <div>
-          {Number.isNaN(Number(amount)) || amount === ""
-            ? "$0.00"
-            : `$${(Number(amount) * 5.48).toFixed(2)}`}
-        </div>
+        {Number(amount) ? `$${(Number(amount) * 5.8).toFixed(2)}` : "$0.00"}
       </div>
-
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
         <span className="py-1 text-foreground/80">
-          {balance.toLocaleString()} hICP
+          {balance?.toLocaleString()} hICP
         </span>
-        <Button variant="ghost" size="xs" onClick={handleMax}>
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={() => {
+            const bal = Number(balance) || 0;
+            const f = Number(fee) || 0;
+            const max = bal > f ? bal - f : 0;
+            onChange(max.toString());
+          }}
+        >
           MAX
         </Button>
       </div>
