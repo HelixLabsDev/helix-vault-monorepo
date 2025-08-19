@@ -39,7 +39,7 @@ export const useStore = create<AppState>((set) => ({
   actor: null,
   setActor: (actor) => set({ actor }),
 
-  vaultAddress: "",
+  vaultAddress: "osvil-vyaaa-aaaaj-qnsba-cai",
   setVaultAddress: (vaultAddress) => set({ vaultAddress }),
 
   ledgerActor: null,
