@@ -497,8 +497,14 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
         id="pay"
         placeholder="0"
         type="text"
+        inputMode="decimal"
+        pattern="[0-9]*[.]?[0-9]*"
         value={amount}
         onChange={(e) => handleChange(e.target.value)}
+        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()} // prevent scroll wheel changing value
+        onKeyDown={(e) => {
+          if (["ArrowUp", "ArrowDown"].includes(e.key)) e.preventDefault(); // stop stepping
+        }}
         className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
       />
       <div className="absolute top-3 right-5">
