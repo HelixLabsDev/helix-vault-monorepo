@@ -463,29 +463,43 @@ interface AmountInputProps {
 
 function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
   const handleChange = (value: string) => {
-    // Allow digits and one dot
-    let sanitized = value.replace(/[^0-9.]/g, "");
+    // Allow digits and dots only
+    let s = value.replace(/[^0-9.]/g, "");
 
-    // Prevent multiple dots
-    const dotCount = (sanitized.match(/\./g) || []).length;
-    if (dotCount > 1) {
-      sanitized = sanitized.substring(0, sanitized.length - 1);
+    // Allow empty (user clearing input)
+    if (s === "") {
+      onChange("");
+      return;
     }
 
-    // Preserve input like "0.", ".1", "0.01"
-    const parts = sanitized.split(".");
-    const wholePart = parts[0] || "0";
-    let newValue = wholePart;
-
-    if (sanitized.includes(".")) {
-      const fractionalPart = parts[1]?.slice(0, 8) || "";
-      newValue += "." + fractionalPart;
+    // Keep at most one dot
+    const firstDot = s.indexOf(".");
+    if (firstDot !== -1) {
+      s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
     }
 
-    // Optional: prevent input longer than 18 digits
-    if (newValue.length > 24) return;
+    // If it starts with ".", make it "0."
+    if (s.startsWith(".")) s = "0" + s;
 
-    onChange(newValue);
+    // Limit to 8 decimals
+    if (s.includes(".")) {
+      const [w, f = ""] = s.split(".");
+      s = `${w}.${f.slice(0, 8)}`;
+    }
+
+    // Trim leading zeros on whole part, but keep "0" and "0.xxx"
+    if (!s.includes(".")) {
+      s = s.replace(/^0+(\d)/, "$1"); // "0005" -> "5", keep lone "0"
+    } else {
+      const [w, f = ""] = s.split(".");
+      const ww = w.replace(/^0+(\d)/, "$1") || "0";
+      s = `${ww}.${f}`;
+    }
+
+    // Optional: total length cap
+    if (s.length > 24) s = s.slice(0, 24);
+
+    onChange(s);
   };
 
   return (
@@ -501,9 +515,9 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
         pattern="[0-9]*[.]?[0-9]*"
         value={amount}
         onChange={(e) => handleChange(e.target.value)}
-        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()} // prevent scroll wheel changing value
+        onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
         onKeyDown={(e) => {
-          if (["ArrowUp", "ArrowDown"].includes(e.key)) e.preventDefault(); // stop stepping
+          if (["ArrowUp", "ArrowDown"].includes(e.key)) e.preventDefault();
         }}
         className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
       />
