@@ -13,10 +13,12 @@ export const StatsSection = ({ tvl }: { tvl: any }) => {
   let uniqueStakers = null;
   let isLoadingPool = false;
 
-  tokenPrice = Math.round(tvl?.assets?.tokens[0]?.tokenPrice) || 0;
-  uniqueStakers = tvl?.uniqueWallets || "0";
-  isLoadingPool = false;
-
+  if (!tvl) {
+    isLoadingPool = true;
+  } else if (tvl?.tokenStats?.length > 0) {
+    tokenPrice = tvl.tokenStats[0].tokenPrice;
+    uniqueStakers = tvl.uniqueWallets;
+  }
   const stats: StatItemProps[] = React.useMemo(
     () => [
       {
