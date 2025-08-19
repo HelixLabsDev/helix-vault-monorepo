@@ -66,6 +66,7 @@ export default function StakeDemo({
   const [steps, setSteps] = useState<DepositStep[]>(initialSteps);
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fee, setFee] = useState<number>(0);
 
   const { address } = useAccount();
 
@@ -80,6 +81,8 @@ export default function StakeDemo({
       const userBalance = await actor.get_user_balance(
         Principal.fromText(principal)
       );
+      const fee = await actor.get_transfer_fee();
+      setFee(convertNatToNumber(fee.toString()));
 
       setBalance(convertNatToNumber(vaultBalance.toString()));
       setUserBalance(convertNatToNumber(userBalance.toString()));
@@ -396,6 +399,7 @@ export default function StakeDemo({
             onChange={handleAmountChange}
             max={withdrawBalance}
             balance={withdrawBalance}
+            fee={fee}
           />
         </TabsContent>
         <TabsContent value="withdraw">
@@ -404,6 +408,7 @@ export default function StakeDemo({
             onChange={handleAmountChange}
             max={userBalance}
             balance={userBalance}
+            fee={fee}
           />
         </TabsContent>
       </Tabs>
@@ -453,9 +458,10 @@ interface AmountInputProps {
   onChange: (value: string) => void;
   max?: number;
   balance?: number;
+  fee?: number;
 }
 
-function AmountInput({ amount, onChange, balance }: AmountInputProps) {
+function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
   const handleChange = (value: string) => {
     // Allow digits and one dot
     let sanitized = value.replace(/[^0-9.]/g, "");
@@ -520,7 +526,12 @@ function AmountInput({ amount, onChange, balance }: AmountInputProps) {
         <Button
           variant="ghost"
           size="xs"
-          onClick={() => balance && onChange(balance.toString())}
+          onClick={() => {
+            const bal = balance ? Number(balance.toString()) : 0;
+            const f = fee ? Number(fee.toString()) : 0;
+            const max = bal > f ? bal - f : 0;
+            onChange(max.toString());
+          }}
         >
           MAX
         </Button>
