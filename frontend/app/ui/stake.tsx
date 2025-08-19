@@ -460,46 +460,71 @@ interface AmountInputProps {
   balance?: number;
   fee?: number;
 }
+interface AmountInputProps {
+  amount: string;
+  onChange: (value: string) => void;
+  balance?: number; // human units
+  fee?: number; // human units
+}
 
-function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
+function AmountInput({
+  amount,
+  onChange,
+  balance = 0,
+  fee = 0,
+}: AmountInputProps) {
+  const DECIMALS = 8;
+
+  const getMax = () => Math.max(0, balance - fee);
+
   const handleChange = (value: string) => {
-    // Allow digits and dots only
+    // 1) only digits + dot
     let s = value.replace(/[^0-9.]/g, "");
 
-    // Allow empty (user clearing input)
+    // 2) allow empty
     if (s === "") {
       onChange("");
       return;
     }
 
-    // Keep at most one dot
+    // 3) single dot only
     const firstDot = s.indexOf(".");
     if (firstDot !== -1) {
       s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
     }
 
-    // If it starts with ".", make it "0."
+    // 4) leading dot -> "0."
     if (s.startsWith(".")) s = "0" + s;
 
-    // Limit to 8 decimals
+    // 5) limit to 8 decimals
     if (s.includes(".")) {
       const [w, f = ""] = s.split(".");
-      s = `${w}.${f.slice(0, 8)}`;
+      s = `${w}.${f.slice(0, DECIMALS)}`;
     }
 
-    // Trim leading zeros on whole part, but keep "0" and "0.xxx"
+    // 6) trim leading zeros on whole part
     if (!s.includes(".")) {
-      s = s.replace(/^0+(\d)/, "$1"); // "0005" -> "5", keep lone "0"
+      s = s.replace(/^0+(\d)/, "$1");
+      if (s === "") s = "0";
     } else {
       const [w, f = ""] = s.split(".");
       const ww = w.replace(/^0+(\d)/, "$1") || "0";
       s = `${ww}.${f}`;
     }
 
-    // Optional: total length cap
-    if (s.length > 24) s = s.slice(0, 24);
+    // 7) clamp to max
+    const num = Number(s);
+    const max = getMax();
+    if (!isNaN(num) && num > max) {
+      s = max.toFixed(DECIMALS).replace(/\.?0+$/, ""); // trim trailing zeros
+    }
 
     onChange(s);
+  };
+
+  const handleMax = () => {
+    const max = getMax();
+    onChange(max.toFixed(DECIMALS).replace(/\.?0+$/, ""));
   };
 
   return (
@@ -507,6 +532,7 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
       <div className="absolute top-3 left-4 text-sm text-foreground/80">
         Amount
       </div>
+
       <Input
         id="pay"
         placeholder="0"
@@ -521,6 +547,7 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
         }}
         className="hover:bg-primary/5 dark:bg-foreground/5 bg-white border-0 focus-visible:ring-offset-0 focus-visible:ring-[0.2px] h-[120px] py-[40px] px-4 md:text-[34px]"
       />
+
       <div className="absolute top-3 right-5">
         <picture className="flex items-center border rounded-full p-1 w-7 h-7 bg-primary/20">
           <img
@@ -532,27 +559,20 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
           />
         </picture>
       </div>
+
       <div className="absolute flex gap-1 bottom-4 left-4 text-xs text-muted-foreground/50">
         <div>
           {Number.isNaN(Number(amount)) || amount === ""
             ? "$0.00"
-            : `$${(Number(amount) * 6.5).toFixed(2)}`}
+            : `$${(Number(amount) * 5.48).toFixed(2)}`}
         </div>
       </div>
+
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
         <span className="py-1 text-foreground/80">
-          {balance?.toLocaleString()} hICP
+          {balance.toLocaleString()} hICP
         </span>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() => {
-            const bal = balance ? Number(balance.toString()) : 0;
-            const f = fee ? Number(fee.toString()) : 0;
-            const max = bal > f ? bal - f : 0;
-            onChange(max.toString());
-          }}
-        >
+        <Button variant="ghost" size="xs" onClick={handleMax}>
           MAX
         </Button>
       </div>
