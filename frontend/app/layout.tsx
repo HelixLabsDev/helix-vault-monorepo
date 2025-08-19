@@ -32,7 +32,7 @@ export default async function RootLayout({
           >
             <div className="flex flex-col justify-center min-h-screen max-w-5xl mx-auto overflow-hidden">
               <Header />
-              <main className="px-10 mt-32 mb-6 bg-zinc-50 dark:bg-[#01100c] ">
+              <main className="px-10 mt-32 mb-24 bg-zinc-50 dark:bg-[#01100c] ">
                 {children}
               </main>
               <Footer />

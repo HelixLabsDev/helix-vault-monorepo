@@ -37,7 +37,7 @@ export default function BridgePage() {
   const [toChain, setToChain] = useState(chains[1].name);
 
   return (
-    <div className="h-full md:flex-row flex-col flex gap-8 items-start font-sans justify-center py-14">
+    <div className="h-full md:flex-row flex-col flex gap-8 items-start font-sans justify-center py-20">
       <Card className="w-full max-w-xl text-foreground shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">

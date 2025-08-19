@@ -157,7 +157,7 @@ export default function HICPTestnetFaucet() {
   }, [principal]);
 
   return (
-    <div className="mx-auto w-full md:p-4 h-full py-14">
+    <div className="mx-auto w-full h-full py-20">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">hICP Testnet Faucet</h1>

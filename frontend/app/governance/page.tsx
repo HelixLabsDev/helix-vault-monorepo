@@ -28,7 +28,7 @@ export default function Governance() {
   }, [actorCore]);
 
   return (
-    <div className="flex flex-col py-14 h-full">
+    <div className="flex flex-col py-20 h-full">
       <div className="flex items-center justify-between mb-6">
         <div className="text-3xl font-light relative overflow-hidden">
           Governance
