@@ -181,9 +181,9 @@ export default function StakeDemo({
               updateStepStatus("approve", "failed");
               return;
             }
-
-            updateStepStatus("approve", "completed");
           }
+
+          updateStepStatus("approve", "completed");
 
           updateStepStatus("deposit", "in-progress");
           // Perform Deposit
