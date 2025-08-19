@@ -68,7 +68,6 @@ export default function Home() {
           };
         });
 
-        console.log("enrichedProposals:", enrichedProposals);
         setData2(enrichedProposals);
       } catch (e) {
         console.error("Fetch failed:", e);
@@ -85,7 +84,6 @@ export default function Home() {
       setLoading(true);
       try {
         const usersData = await _usersTVL();
-        console.log("usersData", usersData);
         setTvl(usersData.data);
       } catch (error) {
         console.error("Error fetching users:", error);

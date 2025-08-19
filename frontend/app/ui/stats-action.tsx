@@ -9,16 +9,12 @@ interface StatItemProps {
 }
 
 export const StatsSection = ({ tvl }: { tvl: any }) => {
-  let stakingRatio = null;
-  let usd = null;
-  let rewardReleased = null;
+  let tokenPrice = null;
   let uniqueStakers = null;
   let isLoadingPool = false;
 
-  stakingRatio = "10";
-  usd = tvl.valueUSD || 0;
-  rewardReleased = tvl?.icpPercentage || "0";
-  uniqueStakers = tvl?.uniqueWallets || "1";
+  tokenPrice = Math.round(tvl.assets.tokens[0].tokenPrice) || 0;
+  uniqueStakers = tvl.uniqueWallets || "0";
   isLoadingPool = false;
 
   const stats: StatItemProps[] = React.useMemo(
@@ -28,19 +24,11 @@ export const StatsSection = ({ tvl }: { tvl: any }) => {
         value: uniqueStakers,
       },
       {
-        title: "Protocol Staking Ratio",
-        value: `${stakingRatio}%`,
-      },
-      {
-        title: "Rewards Released So Far",
-        value: rewardReleased,
-      },
-      {
-        title: "Total Value (USD)",
-        value: `$${Number(usd).toFixed(2)}`,
+        title: "Token Price",
+        value: tokenPrice,
       },
     ],
-    [uniqueStakers, stakingRatio, rewardReleased, usd]
+    [uniqueStakers, tokenPrice]
   );
 
   if (isLoadingPool) {

@@ -10,7 +10,7 @@ import { useStore } from "@/lib/store";
 import { convertBalance, convertNatToNumber } from "@/lib/utils";
 import { Principal } from "@dfinity/principal";
 import { createActor } from "@/declarations/helix_vault_backend";
-import { _userDetail } from "@/lib/axios/_user_detail";
+import { _userDetail, _usersTVL } from "@/lib/axios/_user_detail";
 import TransactionList, { Transaction } from "../ui/transaction-list";
 
 const LottiePlayer = dynamic(() => import("lottie-react"), { ssr: false });
@@ -35,19 +35,17 @@ export interface VaultUser {
   valueUSD: string;
   totalDeposited: number;
   recentTransactions: Transaction[];
-  tvl: tvlType;
 }
 
 export interface tvlType {
   totalDeposited: string;
   uniqueWallets: string;
-  valueUSD: string;
-  icpPercentage: string;
   assets: {
-    stICP: {
-      totalLocked: number;
-      valueUSD: number;
-    };
+    tokens: [
+      {
+        tokenPrice: number;
+      }
+    ];
   };
 }
 
@@ -75,17 +73,16 @@ export default function Home() {
     valueUSD: "0",
     totalDeposited: 0,
     recentTransactions: [],
-    tvl: {
-      totalDeposited: "0",
-      uniqueWallets: "0",
-      valueUSD: "0",
-      icpPercentage: "0",
-      assets: {
-        stICP: {
-          totalLocked: 0,
-          valueUSD: 0,
+  });
+  const [tvl, setTvl] = useState<tvlType>({
+    totalDeposited: "0",
+    uniqueWallets: "0",
+    assets: {
+      tokens: [
+        {
+          tokenPrice: 0,
         },
-      },
+      ],
     },
   });
 
@@ -143,8 +140,11 @@ export default function Home() {
     const fetchUserDetails = async () => {
       try {
         const userData = await _userDetail({ address: principal });
+        const data = await _usersTVL();
         setPoints(userData?.data?.points || 0);
-        setUsers(userData?.data as VaultUser);
+        setUsers(userData?.data);
+
+        setTvl(data?.data);
       } catch (err) {
         console.error("Error fetching user details:", err);
       }
@@ -200,7 +200,7 @@ export default function Home() {
       </div>
       <div className="mt-12 w-full md:w-1/3 block md:sticky top-5 relative">
         <StakeDemo
-          tvl={users ?? { valueUSD: "0", icpPercentage: "0" }}
+          tvl={tvl ?? { uniqueWallets: "0", totalDeposited: "0" }}
           setUsers={setUsers}
         />
       </div>
