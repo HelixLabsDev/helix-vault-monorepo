@@ -511,7 +511,7 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
         </picture>
       </div>
       <div className="absolute flex gap-1 bottom-4 left-4 text-xs text-muted-foreground/50">
-        {Number(amount) ? `$${(Number(amount) * 5.8).toFixed(2)}` : "$0.00"}
+        {Number(amount) ? `$${(Number(amount) * 5.3).toFixed(2)}` : "$0.00"}
       </div>
       <div className="absolute bottom-3 right-4 text-xs text-primary flex gap-0.5">
         <span className="py-1 text-foreground/80">

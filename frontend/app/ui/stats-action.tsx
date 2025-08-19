@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Skeleton } from "@/app/ui/skeleton";
-// import { tvlType } from "../icp/page";
 
 interface StatItemProps {
   title: string;
