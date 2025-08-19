@@ -13,8 +13,8 @@ export const StatsSection = ({ tvl }: { tvl: any }) => {
   let uniqueStakers = null;
   let isLoadingPool = false;
 
-  tokenPrice = Math.round(tvl.assets.tokens[0].tokenPrice) || 0;
-  uniqueStakers = tvl.uniqueWallets || "0";
+  tokenPrice = Math.round(tvl?.assets?.tokens[0]?.tokenPrice) || 0;
+  uniqueStakers = tvl?.uniqueWallets || "0";
   isLoadingPool = false;
 
   const stats: StatItemProps[] = React.useMemo(
