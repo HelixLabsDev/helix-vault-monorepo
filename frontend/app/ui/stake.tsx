@@ -68,6 +68,8 @@ export default function StakeDemo({
   const [isProcessing, setIsProcessing] = useState(false);
   const [fee, setFee] = useState<number>(0);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const { address } = useAccount();
 
   const fetchBalances = useCallback(async () => {
@@ -76,6 +78,7 @@ export default function StakeDemo({
       return;
     }
 
+    setIsLoading(true);
     try {
       const vaultBalance = await actor.get_vault_balance();
       const userBalance = await actor.get_user_balance(
@@ -96,6 +99,8 @@ export default function StakeDemo({
       console.error("Error fetching balances:", error);
       toast.error("Failed to fetch balances");
     }
+
+    setIsLoading(false);
   }, [
     actor,
     principal,
@@ -441,9 +446,15 @@ export default function StakeDemo({
             onClick={() =>
               handleTransaction(isDeposit ? "deposit" : "withdraw")
             }
-            disabled={!amount}
+            disabled={!amount || isProcessing || isLoading}
           >
-            {isDeposit ? "Deposit" : "Withdraw"}
+            {!amount
+              ? "Enter an amount"
+              : isLoading
+              ? "Loading..."
+              : isDeposit
+              ? "Deposit"
+              : "Withdraw"}
           </Button>
         ) : (
           <InternetIdentity />
