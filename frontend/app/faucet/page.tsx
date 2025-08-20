@@ -122,7 +122,19 @@ export default function HICPTestnetFaucet() {
       const tx: any = await faucetActor.claim_tokens([]);
 
       if (tx.Err) {
-        setMessage(tx.Err || "Transaction failed");
+        const err = tx.Err as string;
+        const match = err.match(/Next at (\d+) ns/);
+        if (match) {
+          const ns = BigInt(match[1]); // timestamp in nanoseconds
+          const ms = Number(ns / BigInt(1_000_000));
+          const nextDate = new Date(ms);
+
+          const readable = nextDate.toLocaleString(); // e.g. "8/20/2025, 4:45:41 PM"
+          setMessage(`Claim too soon. Next available at ${readable}`);
+        } else {
+          setMessage(err || "Transaction failed");
+        }
+
         return;
       }
 
