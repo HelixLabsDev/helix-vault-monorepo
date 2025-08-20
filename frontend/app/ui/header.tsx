@@ -12,7 +12,10 @@ export default function Header() {
   const [menuState, setMenuState] = useState(false);
   return (
     <div className="mx-auto my-8 py-4 px-6 fixed top-0 bg-zinc-50 dark:bg-[#01100c] z-50 flex justify-between items-center max-w-5xl w-full">
-      <div className="flex gap-6 items-center">
+      <div
+        className="flex gap-6 items-center"
+        data-state={menuState && "active"}
+      >
         <button
           onClick={() => setMenuState(!menuState)}
           aria-label={menuState == true ? "Close Menu" : "Open Menu"}
@@ -49,8 +52,8 @@ export default function Header() {
 
         <div
           className={cn(
-            `absolute transition-all duration-300 md:hidden bg-background top-12 flex flex-col font-medium text-sm gap-6 w-full items-start p-6 justify-center rounded-md shadow-lg z-20`,
-            menuState ? "top-24" : "-top-[400px]"
+            `absolute transition-all duration-300 md:hidden bg-zinc-50 dark:bg-[#01100c] top-12 flex flex-col font-medium text-sm gap-6 w-full items-start p-6 justify-center rounded-md shadow-lg z-20`,
+            menuState ? "z-10" : "-z-50 -top-[50px]"
           )}
         >
           <Link href="/governance">
