@@ -47,8 +47,6 @@ export function InternetIdentityConnect({
 
   const { setActorCore } = useStoreCore();
 
-  console.log("principal", principal);
-
   // Init and check session on mount
   useEffect(() => {
     (async () => {
@@ -56,6 +54,7 @@ export function InternetIdentityConnect({
       setAuthClient(_authClient);
 
       const loggedIn = await _authClient.isAuthenticated();
+      setIsAuthenticated(loggedIn);
       if (loggedIn) {
         await updateActor(_authClient);
       }

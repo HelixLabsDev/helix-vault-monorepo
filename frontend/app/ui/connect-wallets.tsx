@@ -41,11 +41,6 @@ export default function LoginStepperDialog() {
     else setStep(1);
   }, [isAuthenticated]);
 
-  // Auto-close when both are connected
-  // useEffect(() => {
-  //   if (isFullyConnected && open) setOpen(false);
-  // }, [isFullyConnected, open]);
-
   const handleCopyPrincipal = async () => {
     try {
       if (!principal) return;
