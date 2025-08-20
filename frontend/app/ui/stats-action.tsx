@@ -30,7 +30,7 @@ export const StatsSection = ({ tvl, fee }: { tvl: any; fee: any }) => {
       },
       {
         title: "Fee",
-        value: fee ?? 0,
+        value: fee.toString() ?? 0,
       },
     ],
     [uniqueStakers, tokenPrice, fee]

@@ -420,7 +420,7 @@ export default function StakeDemo({
       </Tabs>
 
       <div className="shadow hover:bg-primary/5 dark:bg-foreground/5 bg-white p-4 duration-200 ease-in-out">
-        <StatsSection tvl={tvl} fee={convertNatToNumber(fee ?? 0)} />
+        <StatsSection tvl={tvl} fee={Number(fee ?? 0)} />
       </div>
 
       <DepositProgressDialog
@@ -447,7 +447,7 @@ export default function StakeDemo({
             onClick={() =>
               handleTransaction(isDeposit ? "deposit" : "withdraw")
             }
-            disabled={!amount || isProcessing || isLoading}
+            disabled={!amount || isLoading}
           >
             {!amount
               ? "Enter an amount"
