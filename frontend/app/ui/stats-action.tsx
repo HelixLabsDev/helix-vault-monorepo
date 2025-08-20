@@ -11,12 +11,14 @@ export const StatsSection = ({ tvl, fee }: { tvl: any; fee: any }) => {
   let tokenPrice = null;
   let uniqueStakers = null;
   let isLoadingPool = false;
+  let feeW = 0;
 
   if (!tvl) {
     isLoadingPool = true;
   } else if (tvl?.tokenStats?.length > 0) {
     tokenPrice = tvl.tokenStats[0].tokenPrice;
     uniqueStakers = tvl.uniqueWallets;
+    feeW = fee;
   }
   const stats: StatItemProps[] = React.useMemo(
     () => [
@@ -30,10 +32,10 @@ export const StatsSection = ({ tvl, fee }: { tvl: any; fee: any }) => {
       },
       {
         title: "Fee",
-        value: fee.toString() ?? 0,
+        value: feeW.toString() ?? 0,
       },
     ],
-    [uniqueStakers, tokenPrice, fee]
+    [uniqueStakers, tokenPrice, feeW]
   );
 
   if (isLoadingPool) {
