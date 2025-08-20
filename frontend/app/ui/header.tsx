@@ -50,7 +50,7 @@ export default function Header() {
         <div
           className={cn(
             `absolute transition-all duration-300 md:hidden bg-background top-12 flex flex-col font-medium text-sm gap-6 w-full items-start p-6 justify-center rounded-md shadow-lg z-20`,
-            menuState ? "top-0" : "-top-full"
+            menuState ? "top-24" : "-top-[400px]"
           )}
         >
           <Link href="/governance">
