@@ -262,7 +262,7 @@ function VaultTabs({
           <div className="flex flex-col gap-1 mt-6">
             <p className="text-sm">Points</p>
             <p className="text-2xl font-medium text-foreground">
-              {Number(points).toFixed(2)}
+              {Number(points).toFixed(6)}
             </p>
           </div>
 
