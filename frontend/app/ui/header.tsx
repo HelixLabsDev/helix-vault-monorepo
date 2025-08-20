@@ -52,8 +52,8 @@ export default function Header() {
 
         <div
           className={cn(
-            `absolute transition-all duration-300 md:hidden bg-zinc-50 dark:bg-[#01100c] top-12 flex flex-col font-medium text-sm gap-6 w-full items-start p-6 justify-center rounded-md shadow-lg z-20`,
-            menuState ? "z-10" : "-z-50 -top-[50px]"
+            `absolute transition-all duration-300 md:hidden bg-zinc-50 dark:bg-[#01100c] top-16 flex flex-col font-medium text-sm gap-6 w-full items-start p-6 justify-center rounded-md shadow-lg z-20`,
+            menuState ? "z-10" : "hidden -top-[50px]"
           )}
         >
           <Link href="/governance">
