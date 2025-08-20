@@ -420,7 +420,7 @@ export default function StakeDemo({
       </Tabs>
 
       <div className="shadow hover:bg-primary/5 dark:bg-foreground/5 bg-white p-4 duration-200 ease-in-out">
-        <StatsSection tvl={tvl} />
+        <StatsSection tvl={tvl} fee={convertNatToNumber(fee ?? 0)} />
       </div>
 
       <DepositProgressDialog
@@ -483,7 +483,7 @@ function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
 
     // Calculate max spendable balance (balance - fee, but not < 0)
     const bal = Number(balance) || 0;
-    const f = Number(fee) || 0;
+    const f = convertNatToNumber(fee ?? 0) || 0;
     const max = bal > f ? bal - f : 0;
 
     // If exceeds balance → clamp to max

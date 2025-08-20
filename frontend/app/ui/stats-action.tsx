@@ -7,7 +7,7 @@ interface StatItemProps {
   value: string | number | undefined;
 }
 
-export const StatsSection = ({ tvl }: { tvl: any }) => {
+export const StatsSection = ({ tvl, fee }: { tvl: any; fee: any }) => {
   let tokenPrice = null;
   let uniqueStakers = null;
   let isLoadingPool = false;
@@ -22,14 +22,18 @@ export const StatsSection = ({ tvl }: { tvl: any }) => {
     () => [
       {
         title: "Unique Stakers",
-        value: uniqueStakers,
+        value: uniqueStakers ?? 0,
       },
       {
         title: "Token Price",
-        value: tokenPrice,
+        value: tokenPrice ?? 0,
+      },
+      {
+        title: "Fee",
+        value: fee ?? 0,
       },
     ],
-    [uniqueStakers, tokenPrice]
+    [uniqueStakers, tokenPrice, fee]
   );
 
   if (isLoadingPool) {
