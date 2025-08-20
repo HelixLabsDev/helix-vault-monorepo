@@ -86,6 +86,7 @@ export default function StakeDemo({
       );
       const fee = await actor.get_transfer_fee();
       setFee(convertNatToNumber(fee.toString()));
+      console.log(fee);
 
       setBalance(convertNatToNumber(vaultBalance.toString()));
       setUserBalance(convertNatToNumber(userBalance.toString()));
@@ -341,7 +342,6 @@ export default function StakeDemo({
         }
       }
 
-      setIsProcessing(false);
       await fetchBalances();
     } catch (error: any) {
       console.error(`${type} failed:`, error);
@@ -352,6 +352,7 @@ export default function StakeDemo({
         }`
       );
     }
+    setIsProcessing(false);
   };
 
   const updateStepStatus = (
