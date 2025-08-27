@@ -28,15 +28,15 @@ function toFloat18(amount) {
 }
 
 function parse(amount, decimal) {
-  return ethers.utils.parseUnits(amount.toString(), decimal);
+  return ethers.parseUnits(amount.toString(), decimal);
 }
 
 function format(amount, decimal) {
-  return ethers.utils.formatUnits(amount.toString(), decimal);
+  return ethers.formatUnits(amount.toString(), decimal);
 }
 
 function format18(amount) {
-  return ethers.utils.formatUnits(amount.toString(), 18);
+  return ethers.formatUnits(amount.toString(), 18);
 }
 
 function convertPercentagesToWeiArray(percentages) {
