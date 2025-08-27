@@ -259,16 +259,12 @@ export default function StakeDemo({
         setIsWithdraw(true);
         setSteps(initialStepsWithdraw); // Reset steps
 
-        console.log("amount", amount);
-        console.log("amountNat", amountNat);
         try {
           updateStepStatus("burn", "in-progress");
           const { hstICPWriteContract } = await getHstICPContract();
 
-          console.log("work");
           const amountWei = parse18(amount ?? 0);
           const tx = await hstICPWriteContract?.burn(amountWei);
-          console.log("work#2");
           await tx.wait();
           updateStepStatus("burn", "completed");
           const expected_eth_from = address ?? "";

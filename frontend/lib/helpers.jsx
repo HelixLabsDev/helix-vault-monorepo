@@ -1,11 +1,22 @@
 import { ethers } from "ethers";
 
 async function getContractEssentials() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  const signer = provider.getSigner();
-  // await ethereum.request({ method: "eth_requestAccounts" });
+  let signer = null;
+
+  let provider;
+  provider = ethers.getDefaultProvider();
+  if (window.ethereum == null) {
+    provider = ethers.getDefaultProvider();
+  } else {
+    provider = new ethers.BrowserProvider(window?.ethereum);
+
+    signer = await provider.getSigner();
+  }
   return { provider, signer };
+}
+
+function parse18(amount) {
+  return ethers.parseUnits(amount.toString(), 18);
 }
 
 function toInteger18(amount) {
@@ -18,10 +29,6 @@ function toFloat18(amount) {
 
 function parse(amount, decimal) {
   return ethers.utils.parseUnits(amount.toString(), decimal);
-}
-
-function parse18(amount) {
-  return ethers.utils.parseUnits(amount.toString(), 18);
 }
 
 function format(amount, decimal) {
