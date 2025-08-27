@@ -3,37 +3,39 @@ import hstICPAbi from "../abi/HelixStakedICP.json";
 import { hstICPContract } from "../lib/constant";
 import { getContractEssentials } from "./helpers";
 
-// Define the contract address
+// v6-friendly provider type
+type AnyProvider = ethers.Provider | ethers.BrowserProvider;
 
-// Define the return type interface
 interface HstICPContracts {
   hstICPReadContract: ethers.Contract;
   hstICPWriteContract: ethers.Contract;
-  provider: ethers.providers.Provider;
-  signer: ethers.Signer;
+  provider: AnyProvider;
+  signer: ethers.Signer; // guaranteed for write
 }
 
-/**
- * Gets the EigenFi pool contracts for reading and writing
- * @returns Object containing read and write contracts, provider and signer
- */
-async function getHstICPContract(): Promise<HstICPContracts> {
+export async function getHstICPContract(): Promise<HstICPContracts> {
   const { provider, signer } = await getContractEssentials();
 
+  if (!provider) {
+    throw new Error("No provider available.");
+  }
+  if (!signer) {
+    // If your getContractEssentials can return null signer (fallback RPC),
+    // force users to connect for write ops:
+    throw new Error("No signer found. Connect a wallet to enable writes.");
+  }
+
+  // In v6, pass the runner directly (Provider for read, Signer for write)
   const hstICPReadContract = new ethers.Contract(
     hstICPContract,
     hstICPAbi,
     provider
   );
+  const hstICPWriteContract = new ethers.Contract(
+    hstICPContract,
+    hstICPAbi,
+    signer
+  );
 
-  const hstICPWriteContract = hstICPReadContract.connect(signer);
-
-  return {
-    hstICPReadContract,
-    hstICPWriteContract,
-    provider,
-    signer,
-  };
+  return { hstICPReadContract, hstICPWriteContract, provider, signer };
 }
-
-export { getHstICPContract };
