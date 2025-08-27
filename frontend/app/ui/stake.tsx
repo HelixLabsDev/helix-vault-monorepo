@@ -16,7 +16,6 @@ import {
 } from "@/lib/utils";
 import InternetIdentity from "./dfinity";
 import { _depositEthereum, _withdrawEthereum } from "@/lib/axios/_actions";
-import { getHstICPContract } from "@/lib/eth-contract";
 import { parse18 } from "@/lib/helpers";
 import { useAccount } from "wagmi";
 import Link from "next/link";
@@ -29,6 +28,7 @@ import {
   initialStepsWithdraw,
   WithdrawProgressDialog,
 } from "./progress-bar-withdraw";
+import { getHstICPContract } from "@/lib/eth-contract";
 
 interface DepositStep {
   id: string;
@@ -259,10 +259,13 @@ export default function StakeDemo({
         setIsWithdraw(true);
         setSteps(initialStepsWithdraw); // Reset steps
 
+        console.log("amount", amount);
+        console.log("amountNat", amountNat);
         try {
           updateStepStatus("burn", "in-progress");
           const { hstICPWriteContract } = await getHstICPContract();
 
+          console.log("work");
           const tx = await hstICPWriteContract?.burn(parse18(amount));
           await tx.wait();
           updateStepStatus("burn", "completed");
