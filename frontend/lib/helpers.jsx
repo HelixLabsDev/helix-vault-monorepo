@@ -1,10 +1,17 @@
 import { ethers } from "ethers";
 
-async function getContractEssentials() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  const signer = provider.getSigner();
-  // await ethereum.request({ method: "eth_requestAccounts" });
+export async function getContractEssentials() {
+  let signer = null;
+
+  let provider;
+  provider = ethers.getDefaultProvider();
+  if (window.ethereum == null) {
+    provider = ethers.getDefaultProvider();
+  } else {
+    provider = new ethers.BrowserProvider(window?.ethereum);
+
+    signer = await provider.getSigner();
+  }
   return { provider, signer };
 }
 
@@ -53,6 +60,5 @@ export {
   parse18,
   format,
   format18,
-  getContractEssentials,
   convertPercentagesToWeiArray,
 };
