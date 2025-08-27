@@ -474,11 +474,9 @@ interface AmountInputProps {
 }
 function AmountInput({ amount, onChange, balance, fee }: AmountInputProps) {
   const handleChange = (value: string) => {
-    // Split whole + fractional part
     const [whole, frac = ""] = value.split(".");
     let newValue = value.includes(".") ? `${whole}.${frac.slice(0, 8)}` : whole; // limit 8 decimals only if dot exists
 
-    // Convert to number
     const num = Number(newValue);
 
     // Calculate max spendable balance (balance - fee, but not < 0)

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-export async function getContractEssentials() {
+async function getContractEssentials() {
   let signer = null;
 
   let provider;
@@ -59,6 +59,7 @@ export {
   parse,
   parse18,
   format,
+  getContractEssentials,
   format18,
   convertPercentagesToWeiArray,
 };
