@@ -266,7 +266,9 @@ export default function StakeDemo({
           const { hstICPWriteContract } = await getHstICPContract();
 
           console.log("work");
-          const tx = await hstICPWriteContract?.burn(parse18(amount));
+          const amountWei = parse18(amount ?? 0);
+          const tx = await hstICPWriteContract?.burn(amountWei);
+          console.log("work#2");
           await tx.wait();
           updateStepStatus("burn", "completed");
           const expected_eth_from = address ?? "";
