@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import hstICPAbi from "../abi/HelixStakedICP.json";
 import { hstICPContract } from "../lib/constant";
 import { getContractEssentials } from "./helpers";
+import { toast } from "sonner";
 
 // v6-friendly provider type
 type AnyProvider = ethers.Provider | ethers.BrowserProvider;
@@ -17,11 +18,17 @@ export async function getHstICPContract(): Promise<HstICPContracts> {
   const { provider, signer } = await getContractEssentials();
 
   if (!provider) {
+    toast.error(
+      "Withdrawals are not supported on mobile. Please use a desktop browser with the Metamask extension."
+    );
     throw new Error("No provider available.");
   }
   if (!signer) {
     // If your getContractEssentials can return null signer (fallback RPC),
     // force users to connect for write ops:
+    toast.error(
+      "Withdrawals are not supported on mobile. Please use a desktop browser with the Metamask extension."
+    );
     throw new Error("No signer found. Connect a wallet to enable writes.");
   }
 
