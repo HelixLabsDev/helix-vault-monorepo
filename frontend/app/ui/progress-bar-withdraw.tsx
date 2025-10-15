@@ -13,6 +13,8 @@ import {
 } from "@/app/ui/dialog";
 import { Button } from "@/app/ui/button";
 
+export type StepStatus = "pending" | "in-progress" | "completed" | "failed";
+
 interface WithdrawStep {
   id: string;
   title: string;
@@ -29,9 +31,10 @@ interface WithdrawProgressDialogProps {
   tokenSymbol?: string;
   steps?: WithdrawStep[];
   isProcessing?: boolean;
+  errorMessage?: string;
 }
 
-export const initialStepsWithdraw: WithdrawStep[] = [
+export const initialStepsWithdraw = [
   {
     id: "burn",
     title: "Burning",
@@ -60,7 +63,7 @@ export const initialStepsWithdraw: WithdrawStep[] = [
     status: "pending",
     estimatedTime: "",
   },
-];
+] satisfies readonly WithdrawStep[];
 
 const StepIcon = ({ status }: { status: WithdrawStep["status"] }) => {
   const iconProps = { className: "w-5 h-5" };
@@ -108,6 +111,7 @@ export const WithdrawProgressDialog = ({
   tokenSymbol = "ICP",
   steps = initialStepsWithdraw,
   isProcessing,
+  errorMessage,
 }: WithdrawProgressDialogProps) => {
   const completedSteps = steps.filter(
     (step) => step.status === "completed"
@@ -115,12 +119,18 @@ export const WithdrawProgressDialog = ({
   const progress = (completedSteps / steps.length) * 100;
   const inProgressStep = steps.find((step) => step.status === "in-progress");
   const hasError = steps.some((step) => step.status === "failed");
+  const isComplete = completedSteps === steps.length;
 
-  const canClose =
-    !isProcessing && (completedSteps === steps.length || hasError);
+  const canClose = !isProcessing && (isComplete || hasError);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open || canClose) {
+      onOpenChange(open);
+    }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={canClose ? onOpenChange : undefined}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-md"
         onInteractOutside={(e) => !canClose && e.preventDefault()}
@@ -244,6 +254,11 @@ export const WithdrawProgressDialog = ({
 
           {hasError && (
             <div className="pt-4 border-t border-border">
+              {errorMessage && (
+                <p className="mb-3 text-xs text-red-600 dark:text-red-400">
+                  {errorMessage}
+                </p>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -251,6 +266,19 @@ export const WithdrawProgressDialog = ({
                 className="w-full"
               >
                 Close
+              </Button>
+            </div>
+          )}
+
+          {isComplete && !hasError && (
+            <div className="pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="w-full"
+              >
+                Done
               </Button>
             </div>
           )}

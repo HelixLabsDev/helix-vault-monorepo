@@ -3,12 +3,13 @@
 
 use candid::{CandidType, Encode, Principal};
 use ic_cdk::api::management_canister::main::{
-    create_canister, install_code, CanisterInstallMode, CreateCanisterArgument, InstallCodeArgument,
-    CanisterSettings,
+    create_canister, install_code, CanisterInstallMode, CanisterSettings, CreateCanisterArgument,
+    InstallCodeArgument,
 };
 use serde::{Deserialize, Serialize};
 
-const VAULT_WASM: &[u8] = include_bytes!("../../../target/wasm32-unknown-unknown/release/helix_vault_backend.wasm");
+const VAULT_WASM: &[u8] =
+    include_bytes!("../../../target/wasm32-unknown-unknown/release/helix_vault_backend.wasm");
 
 #[derive(CandidType, Serialize, Deserialize)]
 struct VaultInitArg {
@@ -35,7 +36,8 @@ pub async fn create_helix_vault(token_symbol: String) -> Result<Principal, Strin
     .await
     .map_err(|e| format!("create_canister failed: {:?}", e))?;
 
-    let arg = Encode!(&VaultInitArg { token_symbol }).map_err(|e| format!("Candid encoding failed: {:?}", e))?;
+    let arg = Encode!(&VaultInitArg { token_symbol })
+        .map_err(|e| format!("Candid encoding failed: {:?}", e))?;
 
     install_code(InstallCodeArgument {
         mode: CanisterInstallMode::Install,

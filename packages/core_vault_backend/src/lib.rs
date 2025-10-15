@@ -5,15 +5,15 @@ pub mod governance;
 pub mod types;
 mod vault_factory;
 
-use governance::*;
-use types::*;
-use ic_cdk_macros::*;
-use std::result::Result;
-use candid::{CandidType, Deserialize};
 use candid::Principal;
-use ic_cdk::api::time; 
+use candid::{CandidType, Deserialize};
+use governance::*;
+use ic_cdk::api::time;
+use ic_cdk_macros::*;
 use std::collections::HashSet;
+use std::result::Result;
 use types::ProposalInput;
+use types::*;
 
 #[derive(CandidType, Deserialize)]
 enum Result_ {
@@ -90,7 +90,6 @@ fn vote_proposal(id: u64, approve: bool) -> VoteResult {
     }
 }
 
-
 #[update]
 async fn execute_proposal(id: u64) -> Result<Principal, String> {
     execute_proposal_impl(id).await
@@ -111,7 +110,7 @@ fn list_proposals() -> Vec<GovernanceProposal> {
 #[update]
 fn add_controller_to_vault(vault_id: Principal, new_controller: Principal) -> Result_ {
     use ic_cdk::api::management_canister::main::{
-        update_settings, UpdateSettingsArgument, CanisterSettings,
+        update_settings, CanisterSettings, UpdateSettingsArgument,
     };
 
     ic_cdk::spawn(async move {

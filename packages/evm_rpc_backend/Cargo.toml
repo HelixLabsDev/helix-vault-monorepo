@@ -22,3 +22,4 @@ serde_bytes = "0.11"  # Direct version
 serde_json = "1.0"    # Direct version
 ethers-core = "2.0"   # Direct version
 evm-rpc-canister-types = "4.0.1"  # Direct version
+futures = "0.3"

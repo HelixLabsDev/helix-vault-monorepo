@@ -1,16 +1,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Helix Labs
 
-use ic_cdk_macros::{update, query};
-use ic_cdk::api::{caller, management_canister::main::{install_code, CanisterInstallMode, InstallCodeArgument}};
-use std::collections::HashSet;
-use candid::{CandidType, Principal, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use hex;
+use ic_cdk::api::{
+    caller,
+    management_canister::main::{install_code, CanisterInstallMode, InstallCodeArgument},
+};
+use ic_cdk_macros::{query, update};
+use std::collections::HashSet;
 
 #[derive(CandidType, Deserialize, Clone)]
 pub enum SharedProposalAction {
-    UpgradeVault { vault_id: Principal, wasm_hash: String },
-    CreateVault { token_type: String, duration_secs: u64 },
+    UpgradeVault {
+        vault_id: Principal,
+        wasm_hash: String,
+    },
+    CreateVault {
+        token_type: String,
+        duration_secs: u64,
+    },
 }
 
 #[derive(CandidType, Deserialize, Clone, PartialEq)]
@@ -60,8 +69,13 @@ struct ProposalInput {
 
 #[derive(CandidType, Deserialize)]
 enum ProposalAction {
-    CreateVault { token_symbol: String },
-    UpgradeVault { vault_id: String, new_code_hash: Vec<u8> },
+    CreateVault {
+        token_symbol: String,
+    },
+    UpgradeVault {
+        vault_id: String,
+        new_code_hash: Vec<u8>,
+    },
 }
 
 thread_local! {
@@ -69,9 +83,7 @@ thread_local! {
     static NEXT_ID: std::cell::RefCell<u64> = std::cell::RefCell::new(0);
 }
 
-const HELIX_ADMINS: &[&str] = &[
-    "vlasd-azdjd-gjqf7-fvfcz-m2l6t-4wqin-two5b-xewmr-ihtot-s6zqw-iqe",
-];
+const HELIX_ADMINS: &[&str] = &["vlasd-azdjd-gjqf7-fvfcz-m2l6t-4wqin-two5b-xewmr-ihtot-s6zqw-iqe"];
 
 // const SNS_ADMINS: &[&str] = &[
 //     "fr355-aqdyv-mtaza-ae4um-glwpv-55ptp-b5z5a-4cyqm-qhk7z-xpvx7-fqe",
@@ -103,51 +115,59 @@ fn submit_proposal(title: String, description: String, action: SharedProposalAct
 
 #[update]
 fn approve_proposal(id: u64) -> Result_ {
-    PROPOSALS.with(|p| {
-        let mut proposals = p.borrow_mut();
-        let proposal = proposals.iter_mut().find(|p| p.id == id)
-            .ok_or("Proposal not found")?;
+    PROPOSALS
+        .with(|p| {
+            let mut proposals = p.borrow_mut();
+            let proposal = proposals
+                .iter_mut()
+                .find(|p| p.id == id)
+                .ok_or("Proposal not found")?;
 
-        if proposal.status != SharedProposalStatus::Pending {
-            return Err("Proposal is already finalized.".to_string());
-        }
+            if proposal.status != SharedProposalStatus::Pending {
+                return Err("Proposal is already finalized.".to_string());
+            }
 
-        if proposal.approvals.contains(&caller()) {
-            return Err("You have already approved this proposal.".to_string());
-        }
+            if proposal.approvals.contains(&caller()) {
+                return Err("You have already approved this proposal.".to_string());
+            }
 
-        proposal.approvals.insert(caller());
+            proposal.approvals.insert(caller());
 
-        if proposal.approvals.iter().any(is_helix_admin)
-          // && proposal.approvals.iter().any(is_sns_admin)
-        {
-            proposal.status = SharedProposalStatus::Approved;
-        }
+            if proposal.approvals.iter().any(is_helix_admin)
+            // && proposal.approvals.iter().any(is_sns_admin)
+            {
+                proposal.status = SharedProposalStatus::Approved;
+            }
 
-        Ok(())
-    }).into()
+            Ok(())
+        })
+        .into()
 }
 
 #[update]
 fn decline_proposal(id: u64) -> Result_ {
-    PROPOSALS.with(|p| {
-        let mut proposals = p.borrow_mut();
-        let proposal = proposals.iter_mut().find(|p| p.id == id)
-            .ok_or("Proposal not found")?;
+    PROPOSALS
+        .with(|p| {
+            let mut proposals = p.borrow_mut();
+            let proposal = proposals
+                .iter_mut()
+                .find(|p| p.id == id)
+                .ok_or("Proposal not found")?;
 
-        if proposal.status != SharedProposalStatus::Pending {
-            return Err("Proposal is already finalized.".to_string());
-        }
+            if proposal.status != SharedProposalStatus::Pending {
+                return Err("Proposal is already finalized.".to_string());
+            }
 
-        if proposal.declines.contains(&caller()) {
-            return Err("You have already declined this proposal.".to_string());
-        }
+            if proposal.declines.contains(&caller()) {
+                return Err("You have already declined this proposal.".to_string());
+            }
 
-        proposal.declines.insert(caller());
-        proposal.status = SharedProposalStatus::Declined;
+            proposal.declines.insert(caller());
+            proposal.status = SharedProposalStatus::Declined;
 
-        Ok(())
-    }).into()
+            Ok(())
+        })
+        .into()
 }
 
 #[update]
@@ -157,7 +177,9 @@ async fn execute_proposal(id: u64) -> Result_ {
     {
         let result: std::result::Result<(), String> = PROPOSALS.with(|p| {
             let mut proposals = p.borrow_mut();
-            let proposal = proposals.iter_mut().find(|p| p.id == id)
+            let proposal = proposals
+                .iter_mut()
+                .find(|p| p.id == id)
                 .ok_or("Proposal not found")?;
 
             if proposal.status == SharedProposalStatus::Executed {
@@ -180,7 +202,10 @@ async fn execute_proposal(id: u64) -> Result_ {
     }
 
     match maybe_action.unwrap() {
-        SharedProposalAction::UpgradeVault { vault_id, wasm_hash } => {
+        SharedProposalAction::UpgradeVault {
+            vault_id,
+            wasm_hash,
+        } => {
             let upgrade_args = InstallCodeArgument {
                 mode: CanisterInstallMode::Upgrade(None),
                 canister_id: vault_id,
@@ -196,28 +221,26 @@ async fn execute_proposal(id: u64) -> Result_ {
             }
         }
 
-        SharedProposalAction::CreateVault { token_type, duration_secs } => {
+        SharedProposalAction::CreateVault {
+            token_type,
+            duration_secs,
+        } => {
             let core_vault_canister_id = match Principal::from_text("zb2a6-yyaaa-aaaaj-qnr7a-cai") {
                 Ok(principal) => principal,
                 Err(e) => return Result_::Err(format!("Invalid canister ID: {}", e)),
             };
 
-            let proposal_input = (
-                ProposalInput {
-                    title: format!("Create Vault for {}", token_type),
-                    description: format!("Shared Ownership Proposal: Deploy vault for {}", token_type),
-                    action: ProposalAction::CreateVault {
-                        token_symbol: token_type.clone()
-                    },
-                    duration_secs,
+            let proposal_input = (ProposalInput {
+                title: format!("Create Vault for {}", token_type),
+                description: format!("Shared Ownership Proposal: Deploy vault for {}", token_type),
+                action: ProposalAction::CreateVault {
+                    token_symbol: token_type.clone(),
                 },
-            );
+                duration_secs,
+            },);
 
-            let call_result: std::result::Result<(u64,), _> = ic_cdk::call(
-                core_vault_canister_id,
-                "submit_proposal",
-                proposal_input,
-            ).await;
+            let call_result: std::result::Result<(u64,), _> =
+                ic_cdk::call(core_vault_canister_id, "submit_proposal", proposal_input).await;
 
             match call_result {
                 Ok((proposal_id,)) => {

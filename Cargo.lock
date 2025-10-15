@@ -750,6 +750,7 @@ dependencies = [
  "candid",
  "ethers-core",
  "evm-rpc-canister-types",
+ "futures",
  "getrandom 0.2.16",
  "hex",
  "ic-cdk 0.16.1",

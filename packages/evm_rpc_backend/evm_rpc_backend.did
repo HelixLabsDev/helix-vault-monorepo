@@ -7,6 +7,13 @@ service : {
     value: text;
     gas: opt nat64;
   }, nat64) -> (variant { ok: text; err: text });
-  "get_canister_eth_address": () -> (text);
-  "verify_tx_receipt_with_validation": (text, text, text, text) -> (variant { ok: text; err: text });
+  "get_canister_eth_address": () -> (variant { ok: text; err: text });
+  "verify_tx_receipt_with_validation": (text, text, text, text) -> (variant {
+    ok: record {
+      from: text;
+      amount_wei: text;
+      contract: text;
+    };
+    err: text;
+  });
 }

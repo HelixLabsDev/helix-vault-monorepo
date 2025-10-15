@@ -4,9 +4,9 @@ use candid::{candid_method, CandidType, Deserialize, Nat, Principal};
 use ic_cdk::{api, caller, id};
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::cell::RefCell;
 use std::collections::{BTreeMap, VecDeque};
-use sha2::{Digest, Sha256};
 
 // ----------------------------- ICRC-1 types -----------------------------
 
@@ -89,8 +89,8 @@ pub struct PersistedState {
     pub cfg: FaucetConfig,
     pub last_claim_ns: BTreeMap<Principal, u64>,
     pub lifetime_claimed: BTreeMap<Principal, Nat>, // per-principal total
-    pub day_totals: BTreeMap<u64, Nat>, // key = day bucket
-    pub events: VecDeque<FaucetEvent>,  // ring buffer
+    pub day_totals: BTreeMap<u64, Nat>,             // key = day bucket
+    pub events: VecDeque<FaucetEvent>,              // ring buffer
 }
 
 thread_local! {
@@ -118,9 +118,13 @@ const EVENTS_CAP: usize = 2_000;
 type FxResult<T> = core::result::Result<T, String>;
 
 #[inline]
-fn now_ns() -> u64 { api::time() }
+fn now_ns() -> u64 {
+    api::time()
+}
 #[inline]
-fn day_bucket(ts_ns: u64) -> u64 { ts_ns / (86_400 * NANOS_PER_SEC) }
+fn day_bucket(ts_ns: u64) -> u64 {
+    ts_ns / (86_400 * NANOS_PER_SEC)
+}
 
 #[inline]
 fn with_state_mut<R>(f: impl FnOnce(&mut PersistedState) -> R) -> R {
@@ -133,8 +137,14 @@ fn with_state<R>(f: impl FnOnce(&PersistedState) -> R) -> R {
 }
 
 fn record_event_in(st: &mut PersistedState, kind: FaucetEventKind, actor: Principal, ts: u64) {
-    if st.events.len() == EVENTS_CAP { st.events.pop_front(); }
-    st.events.push_back(FaucetEvent { ts_nanos: ts, actor, kind });
+    if st.events.len() == EVENTS_CAP {
+        st.events.pop_front();
+    }
+    st.events.push_back(FaucetEvent {
+        ts_nanos: ts,
+        actor,
+        kind,
+    });
 }
 
 fn push_event(kind: FaucetEventKind) {
@@ -144,11 +154,20 @@ fn push_event(kind: FaucetEventKind) {
 }
 
 fn only_owner() -> FxResult<()> {
-    with_state(|st| if caller() == st.cfg.owner { Ok(()) } else { Err("Only owner".into()) })
+    with_state(|st| {
+        if caller() == st.cfg.owner {
+            Ok(())
+        } else {
+            Err("Only owner".into())
+        }
+    })
 }
 
 fn caller_account() -> Account {
-    Account { owner: caller(), subaccount: None }
+    Account {
+        owner: caller(),
+        subaccount: None,
+    }
 }
 
 // ------------------------------ Init/Upgrade ----------------------------
@@ -166,7 +185,8 @@ pub fn init(ledger_id: Principal, daily_allowance: Nat) {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    STATE.with(|s| ic_cdk::storage::stable_save((s.borrow().clone(),)).expect("stable_save failed"));
+    STATE
+        .with(|s| ic_cdk::storage::stable_save((s.borrow().clone(),)).expect("stable_save failed"));
 }
 
 #[post_upgrade]
@@ -187,7 +207,15 @@ pub fn set_daily_allowance(new_allowance: Nat) -> FxResult<()> {
     with_state_mut(|st| {
         let old = st.cfg.daily_allowance.clone();
         st.cfg.daily_allowance = new_allowance.clone();
-        record_event_in(st, FaucetEventKind::DailyAllowanceUpdated { old, new_: new_allowance }, actor, ts);
+        record_event_in(
+            st,
+            FaucetEventKind::DailyAllowanceUpdated {
+                old,
+                new_: new_allowance,
+            },
+            actor,
+            ts,
+        );
     });
     Ok(())
 }
@@ -196,13 +224,23 @@ pub fn set_daily_allowance(new_allowance: Nat) -> FxResult<()> {
 #[candid_method(update)]
 pub fn set_claim_interval_nanos(new_interval: u64) -> FxResult<()> {
     only_owner()?;
-    if new_interval == 0 { return Err("Claim interval cannot be zero".into()); }
+    if new_interval == 0 {
+        return Err("Claim interval cannot be zero".into());
+    }
     let actor = caller();
     let ts = now_ns();
     with_state_mut(|st| {
         let old = st.cfg.claim_interval_nanos;
         st.cfg.claim_interval_nanos = new_interval;
-        record_event_in(st, FaucetEventKind::ClaimIntervalUpdated { old_nanos: old, new_nanos: new_interval }, actor, ts);
+        record_event_in(
+            st,
+            FaucetEventKind::ClaimIntervalUpdated {
+                old_nanos: old,
+                new_nanos: new_interval,
+            },
+            actor,
+            ts,
+        );
     });
     Ok(())
 }
@@ -240,7 +278,9 @@ pub fn set_pow_bits(bits: Option<u8>) -> FxResult<()> {
     let actor = caller();
     let ts = now_ns();
     with_state_mut(|st| {
-        st.cfg.pow = bits.map(|b| PowConfig { leading_zero_bits: b });
+        st.cfg.pow = bits.map(|b| PowConfig {
+            leading_zero_bits: b,
+        });
         record_event_in(st, FaucetEventKind::PowSet { bits }, actor, ts);
     });
     Ok(())
@@ -255,7 +295,15 @@ pub fn transfer_ownership(new_owner: Principal) -> FxResult<()> {
     with_state_mut(|st| {
         let old = st.cfg.owner;
         st.cfg.owner = new_owner;
-        record_event_in(st, FaucetEventKind::OwnerChanged { old, new_: new_owner }, actor, ts);
+        record_event_in(
+            st,
+            FaucetEventKind::OwnerChanged {
+                old,
+                new_: new_owner,
+            },
+            actor,
+            ts,
+        );
     });
     Ok(())
 }
@@ -269,7 +317,15 @@ pub fn set_ledger_id(new_ledger: Principal) -> FxResult<()> {
     with_state_mut(|st| {
         let old = st.cfg.ledger_id;
         st.cfg.ledger_id = new_ledger;
-        record_event_in(st, FaucetEventKind::LedgerIdUpdated { old, new_: new_ledger }, actor, ts);
+        record_event_in(
+            st,
+            FaucetEventKind::LedgerIdUpdated {
+                old,
+                new_: new_ledger,
+            },
+            actor,
+            ts,
+        );
     });
     Ok(())
 }
@@ -317,15 +373,25 @@ pub async fn claim_tokens(pow_solution: Option<u64>) -> FxResult<ClaimResult> {
         (
             st.cfg.clone(),
             st.last_claim_ns.get(&caller()).copied(),
-            st.lifetime_claimed.get(&caller()).cloned().unwrap_or(Nat::from(0u64)),
-            st.day_totals.get(&day_bucket(now)).cloned().unwrap_or(Nat::from(0u64)),
+            st.lifetime_claimed
+                .get(&caller())
+                .cloned()
+                .unwrap_or(Nat::from(0u64)),
+            st.day_totals
+                .get(&day_bucket(now))
+                .cloned()
+                .unwrap_or(Nat::from(0u64)),
             st.cfg.daily_allowance.clone(),
             st.cfg.claim_interval_nanos,
         )
     });
 
-    if cfg.paused { return Err("Faucet is paused".into()); }
-    if allowance == Nat::from(0u64) { return Err("Daily allowance is zero".into()); }
+    if cfg.paused {
+        return Err("Faucet is paused".into());
+    }
+    if allowance == Nat::from(0u64) {
+        return Err("Daily allowance is zero".into());
+    }
 
     // PoW check (require solution only if enabled and bits > 0)
     if let Some(p) = &cfg.pow {
@@ -376,12 +442,24 @@ pub async fn claim_tokens(pow_solution: Option<u64>) -> FxResult<ClaimResult> {
     let actor = caller();
     with_state_mut(|st| {
         st.last_claim_ns.insert(actor, now);
-        let life = st.lifetime_claimed.get(&actor).cloned().unwrap_or(Nat::from(0u64));
+        let life = st
+            .lifetime_claimed
+            .get(&actor)
+            .cloned()
+            .unwrap_or(Nat::from(0u64));
         st.lifetime_claimed.insert(actor, life + allowance.clone());
         let day = day_bucket(now);
         let day_total = st.day_totals.get(&day).cloned().unwrap_or(Nat::from(0u64));
         st.day_totals.insert(day, day_total + allowance.clone());
-        record_event_in(st, FaucetEventKind::TokensClaimed { to: to_acc, amount: allowance.clone() }, actor, now);
+        record_event_in(
+            st,
+            FaucetEventKind::TokensClaimed {
+                to: to_acc,
+                amount: allowance.clone(),
+            },
+            actor,
+            now,
+        );
     });
 
     Ok(ClaimResult {
@@ -409,13 +487,22 @@ pub fn get_last_claim_of(user: Principal) -> Option<u64> {
 #[candid_method(query)]
 pub fn get_next_claim_of(user: Option<Principal>) -> Option<u64> {
     let p = user.unwrap_or(caller());
-    with_state(|st| st.last_claim_ns.get(&p).map(|t| *t + st.cfg.claim_interval_nanos))
+    with_state(|st| {
+        st.last_claim_ns
+            .get(&p)
+            .map(|t| *t + st.cfg.claim_interval_nanos)
+    })
 }
 
 #[query]
 #[candid_method(query)]
 pub fn get_lifetime_claimed_of(user: Principal) -> Nat {
-    with_state(|st| st.lifetime_claimed.get(&user).cloned().unwrap_or(Nat::from(0u64)))
+    with_state(|st| {
+        st.lifetime_claimed
+            .get(&user)
+            .cloned()
+            .unwrap_or(Nat::from(0u64))
+    })
 }
 
 #[update]
@@ -446,7 +533,10 @@ pub fn recent_events(skip: u64, limit: u64) -> Vec<FaucetEvent> {
 #[query]
 #[candid_method(query)]
 pub fn faucet_account() -> Account {
-    Account { owner: id(), subaccount: None }
+    Account {
+        owner: id(),
+        subaccount: None,
+    }
 }
 
 #[query]
@@ -467,7 +557,8 @@ pub fn prune_older_than(days: u64) -> FxResult<usize> {
     with_state_mut(|st| {
         // last_claim_ns
         let before = st.last_claim_ns.len();
-        st.last_claim_ns.retain(|_, &mut last| day_bucket(last) >= cutoff_day);
+        st.last_claim_ns
+            .retain(|_, &mut last| day_bucket(last) >= cutoff_day);
         removed += before - st.last_claim_ns.len();
 
         // day_totals
@@ -477,7 +568,8 @@ pub fn prune_older_than(days: u64) -> FxResult<usize> {
 
         // optional: lifetime_claimed (only keep entries that still have a last_claim)
         let before = st.lifetime_claimed.len();
-        st.lifetime_claimed.retain(|p, _| st.last_claim_ns.contains_key(p));
+        st.lifetime_claimed
+            .retain(|p, _| st.last_claim_ns.contains_key(p));
         removed += before - st.lifetime_claimed.len();
     });
 
@@ -494,7 +586,9 @@ fn pow_salt_for_day(day: u64) -> Vec<u8> {
 }
 
 fn verify_pow(principal: Principal, leading_zero_bits: u8, solution: u64) -> bool {
-    if leading_zero_bits == 0 { return true; }
+    if leading_zero_bits == 0 {
+        return true;
+    }
     let current_day = day_bucket(now_ns());
     for off in 0..=1 {
         let salt = pow_salt_for_day(current_day.saturating_sub(off));
@@ -522,22 +616,23 @@ fn verify_pow(principal: Principal, leading_zero_bits: u8, solution: u64) -> boo
 // ------------------------------ Ledger calls ----------------------------
 fn pretty_transfer_err(e: TransferError) -> String {
     match e {
-        TransferError::BadFee { expected_fee } =>
-            format!("Bad fee. Expected: {}", expected_fee),
-        TransferError::BadBurn { min_burn_amount } =>
-            format!("Bad burn. Min: {}", min_burn_amount),
-        TransferError::InsufficientFunds { balance } =>
-            format!("Insufficient funds. Balance: {}", balance),
-        TransferError::TooOld =>
-            "Transaction too old".into(),
-        TransferError::CreatedInFuture { ledger_time } =>
-            format!("Created in future. Ledger time: {}", ledger_time),
-        TransferError::TemporarilyUnavailable =>
-            "Ledger temporarily unavailable".into(),
-        TransferError::Duplicate { duplicate_of } =>
-            format!("Duplicate transaction. Of: {}", duplicate_of),
-        TransferError::GenericError { error_code, message } =>
-            format!("Error {}: {}", error_code, message),
+        TransferError::BadFee { expected_fee } => format!("Bad fee. Expected: {}", expected_fee),
+        TransferError::BadBurn { min_burn_amount } => format!("Bad burn. Min: {}", min_burn_amount),
+        TransferError::InsufficientFunds { balance } => {
+            format!("Insufficient funds. Balance: {}", balance)
+        }
+        TransferError::TooOld => "Transaction too old".into(),
+        TransferError::CreatedInFuture { ledger_time } => {
+            format!("Created in future. Ledger time: {}", ledger_time)
+        }
+        TransferError::TemporarilyUnavailable => "Ledger temporarily unavailable".into(),
+        TransferError::Duplicate { duplicate_of } => {
+            format!("Duplicate transaction. Of: {}", duplicate_of)
+        }
+        TransferError::GenericError {
+            error_code,
+            message,
+        } => format!("Error {}: {}", error_code, message),
     }
 }
 
@@ -560,7 +655,9 @@ async fn icrc1_balance_of(ledger: Principal, acc: Account) -> FxResult<Nat> {
 
 #[query]
 #[candid_method(query)]
-pub fn version() -> String { "icrc_faucet_backend v0.4.0".into() }
+pub fn version() -> String {
+    "icrc_faucet_backend v0.4.0".into()
+}
 
 // ------------------------------- Candid ---------------------------------
 
@@ -568,4 +665,6 @@ candid::export_service!();
 
 #[query(name = "__get_candid_interface_tmp_hack")]
 #[candid_method(query, rename = "__get_candid_interface_tmp_hack")]
-pub fn export_did() -> String { __export_service() }
+pub fn export_did() -> String {
+    __export_service()
+}

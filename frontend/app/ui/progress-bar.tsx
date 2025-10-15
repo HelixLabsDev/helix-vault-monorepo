@@ -13,6 +13,8 @@ import {
 } from "@/app/ui/dialog";
 import { Button } from "@/app/ui/button";
 
+export type StepStatus = "pending" | "in-progress" | "completed" | "failed";
+
 interface DepositStep {
   id: string;
   title: string;
@@ -27,11 +29,12 @@ interface DepositProgressDialogProps {
   onOpenChange: (open: boolean) => void;
   amount?: string;
   tokenSymbol?: string;
-  steps?: DepositStep[];
+  steps?: ReadonlyArray<DepositStep>;
   isProcessing?: boolean;
+  errorMessage?: string;
 }
 
-export const initialSteps: DepositStep[] = [
+export const initialSteps = [
   {
     id: "approve",
     title: "Depositing",
@@ -60,7 +63,7 @@ export const initialSteps: DepositStep[] = [
     status: "pending",
     estimatedTime: "",
   },
-];
+] satisfies readonly DepositStep[];
 
 const StepIcon = ({ status }: { status: DepositStep["status"] }) => {
   const iconProps = { className: "w-5 h-5" };
@@ -108,6 +111,7 @@ export const DepositProgressDialog = ({
   tokenSymbol = "ICP",
   steps = initialSteps,
   isProcessing,
+  errorMessage,
 }: DepositProgressDialogProps) => {
   const completedSteps = steps.filter(
     (step) => step.status === "completed"
@@ -115,12 +119,18 @@ export const DepositProgressDialog = ({
   const progress = (completedSteps / steps.length) * 100;
   const inProgressStep = steps.find((step) => step.status === "in-progress");
   const hasError = steps.some((step) => step.status === "failed");
+  const isComplete = completedSteps === steps.length;
 
-  const canClose =
-    !isProcessing && (completedSteps === steps.length || hasError);
+  const canClose = !isProcessing && (isComplete || hasError);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open || canClose) {
+      onOpenChange(open);
+    }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={canClose ? onOpenChange : undefined}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-md"
         onInteractOutside={(e) => !canClose && e.preventDefault()}
@@ -244,6 +254,11 @@ export const DepositProgressDialog = ({
 
           {hasError && (
             <div className="pt-4 border-t border-border">
+              {errorMessage && (
+                <p className="mb-3 text-xs text-red-600 dark:text-red-400">
+                  {errorMessage}
+                </p>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -251,6 +266,19 @@ export const DepositProgressDialog = ({
                 className="w-full"
               >
                 Close
+              </Button>
+            </div>
+          )}
+
+          {isComplete && !hasError && (
+            <div className="pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="w-full"
+              >
+                Done
               </Button>
             </div>
           )}

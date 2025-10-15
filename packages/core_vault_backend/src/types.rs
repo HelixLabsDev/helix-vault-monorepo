@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Helix Labs
 
-use serde::{Deserialize, Serialize};
 use candid::CandidType;
-use std::collections::HashSet;
 use ic_principal::Principal;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 #[derive(CandidType, Serialize, Deserialize, Clone)]
 pub struct GovernanceProposal {
@@ -31,8 +31,13 @@ pub struct ProposalInput {
 
 #[derive(CandidType, Serialize, Deserialize, Clone)]
 pub enum ProposalAction {
-    CreateVault { token_symbol: String },
-    UpgradeVault { vault_id: String, new_code_hash: Vec<u8> },
+    CreateVault {
+        token_symbol: String,
+    },
+    UpgradeVault {
+        vault_id: String,
+        new_code_hash: Vec<u8>,
+    },
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, PartialEq)]

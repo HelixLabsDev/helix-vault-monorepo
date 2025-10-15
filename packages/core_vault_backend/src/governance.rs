@@ -2,11 +2,11 @@
 // Copyright (c) 2025 Helix Labs
 
 use crate::types::*;
+use ic_cdk::api;
+use ic_cdk_macros::query;
+use ic_principal::Principal;
 use std::cell::RefCell;
 use std::collections::HashSet;
-use ic_cdk::api;
-use ic_principal::Principal;
-use ic_cdk_macros::query;
 
 thread_local! {
     static PROPOSALS: RefCell<Vec<GovernanceProposal>> = RefCell::new(Vec::new());
@@ -46,7 +46,9 @@ pub fn vote_proposal_impl(proposal_id: u64, approve: bool, voter: Principal) -> 
     let result = PROPOSALS.with(|p| {
         let mut proposals = p.borrow_mut();
 
-        let proposal = proposals.iter_mut().find(|p| p.id == proposal_id)
+        let proposal = proposals
+            .iter_mut()
+            .find(|p| p.id == proposal_id)
             .ok_or("Proposal not found".to_string())?;
 
         if proposal.status != ProposalStatus::Pending {
@@ -133,9 +135,12 @@ pub async fn execute_proposal_impl(id: u64) -> Result<Principal, String> {
             }
         }
 
-        ProposalAction::UpgradeVault { vault_id, new_code_hash } => {
+        ProposalAction::UpgradeVault {
+            vault_id,
+            new_code_hash,
+        } => {
             use ic_cdk::api::management_canister::main::{
-                install_code, CanisterInstallMode, InstallCodeArgument
+                install_code, CanisterInstallMode, InstallCodeArgument,
             };
 
             let target = Principal::from_text(vault_id.clone())
