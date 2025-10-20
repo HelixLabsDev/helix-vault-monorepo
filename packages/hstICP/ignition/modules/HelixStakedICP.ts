@@ -9,7 +9,7 @@ export default buildModule("HelixStakedICPModule", (m) => {
 
   const minter = m.getParameter(
     "minter",
-    "0x990BAaD8Cac703f9D402D179683f38Eb33389998"
+    "0xb6FD3e009647Cac38e0c356a91b16fEbFc399b41"
   );
 
   // Deploy HelixStakedICP contract with constructor arguments
