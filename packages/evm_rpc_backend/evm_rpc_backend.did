@@ -1,19 +1,23 @@
 service : {
-  "mint": (text, text, text) -> (variant { ok: text; err: text });
-  "approve_erc20": (text, text, text) -> (variant { ok: text; err: text });
-  "transfer_from_erc20": (text, text, text, text) -> (variant { ok: text; err: text });
+  "set_rpc_config": (nat64, text) -> (variant { Ok: null; Err: text });
+  "get_rpc_config": () -> (opt record { chain_id: nat64; rpc_url: text }) query;
+  "get_canister_eth_address": () -> (variant { Ok: text; Err: text });
   "transfer_eth": (record {
     to: text;
     value: text;
     gas: opt nat64;
-  }, nat64) -> (variant { ok: text; err: text });
-  "get_canister_eth_address": () -> (variant { ok: text; err: text });
+  }, nat64) -> (variant { Ok: text; Err: text });
+  "approve_erc20": (text, text, text) -> (variant { Ok: text; Err: text });
+  "transfer_from_erc20": (text, text, text, text) -> (variant { Ok: text; Err: text });
+  "mint": (text, text, text) -> (variant { Ok: text; Err: text });
+  "burn": (text, text) -> (variant { Ok: text; Err: text });
+  "burn_from": (text, text, text) -> (variant { Ok: text; Err: text });
   "verify_tx_receipt_with_validation": (text, text, text, text) -> (variant {
-    ok: record {
+    Ok: record {
       from: text;
       amount_wei: text;
       contract: text;
     };
-    err: text;
+    Err: text;
   });
 }

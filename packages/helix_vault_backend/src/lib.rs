@@ -15,9 +15,9 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
-const ICRC1_LEDGER_CANISTER_ID: &str = "5rm7o-daaaa-aaaag-auffa-cai";
-const EVM_BACKEND_CANISTER_ID: &str = "zizlc-oqaaa-aaaaj-qnr6q-cai";
-const CONTRACT_ADDRESS: &str = "0xA198902f589BC4805ED4cA6089B9Fe46d1c9a866";
+const ICRC1_LEDGER_CANISTER_ID: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
+const EVM_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+const CONTRACT_ADDRESS: &str = "0x272aEe5159a257359e84EAB3a6e3bd7F90b712EC";
 const DEFAULT_TRANSFER_FEE: u64 = 10_000;
 
 #[derive(Clone, Default)]

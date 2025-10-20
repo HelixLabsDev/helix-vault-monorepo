@@ -8,8 +8,9 @@ use ethers_core::utils::{hex, keccak256};
 use evm_rpc_canister_types::{
     BlockTag, EvmRpcCanister, FeeHistoryArgs, FeeHistoryResult, GetTransactionCountArgs,
     GetTransactionCountResult, GetTransactionReceiptResult, MultiFeeHistoryResult,
-    MultiGetTransactionCountResult, MultiGetTransactionReceiptResult, RpcApi, RpcConfig,
-    RpcServices, EVM_RPC,
+    MultiGetTransactionCountResult, MultiGetTransactionReceiptResult,
+    MultiSendRawTransactionResult, RpcApi, RpcConfig, RpcServices, SendRawTransactionResult,
+    SendRawTransactionStatus, EVM_RPC,
 };
 use futures::channel::oneshot;
 use ic_cdk::api::call::call_with_payment128;
@@ -28,10 +29,13 @@ use std::cell::RefCell;
 use std::time::Duration;
 
 const HELIX_VAULT_CANISTER_ID: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
-const BRIDGE_CONTRACT_ADDRESS: &str = "0xA198902f589BC4805ED4cA6089B9Fe46d1c9a866";
-const ECDSA_KEY_NAME: &str = "secp256k1";
+const BRIDGE_CONTRACT_ADDRESS: &str = "0x272aEe5159a257359e84EAB3a6e3bd7F90b712EC";
+const PROD_ECDSA_KEY_NAME: &str = "secp256k1";
+const LOCAL_ECDSA_KEY_NAME: &str = "dfx_test_key";
+const ECDSA_KEY_NAMES: &[&str] = &[PROD_ECDSA_KEY_NAME, LOCAL_ECDSA_KEY_NAME];
 const MAX_ECDSA_RETRIES: u8 = 5;
 const ECDSA_RETRY_BASE_DELAY_MS: u64 = 50;
+const MIN_PRIORITY_FEE_WEI: u64 = 1_000_000_000; // 1 gwei safety floor
 
 thread_local! {
     static STATE: RefCell<CanisterState> = RefCell::new(CanisterState::default());
@@ -231,7 +235,7 @@ async fn sign_with_ecdsa_retry(
     Err("sign_with_ecdsa exhausted retries".to_string())
 }
 
-async fn ensure_identity(
+async fn ensure_identity_for_key(
     key_id: EcdsaKeyId,
     canister_id: Option<Principal>,
     derivation_path: Vec<Vec<u8>>,
@@ -265,6 +269,42 @@ async fn ensure_identity(
     Ok(identity)
 }
 
+fn is_unknown_key_error(err: &str) -> bool {
+    let normalized = err.to_ascii_lowercase();
+    normalized.contains("unknown threshold key")
+}
+
+fn ecdsa_key_candidates() -> Vec<EcdsaKeyId> {
+    ECDSA_KEY_NAMES
+        .iter()
+        .map(|name| EcdsaKeyId {
+            curve: EcdsaCurve::Secp256k1,
+            name: (*name).to_string(),
+        })
+        .collect()
+}
+
+async fn ensure_identity(
+    canister_id: Option<Principal>,
+    derivation_path: Vec<Vec<u8>>,
+) -> Result<CachedIdentity, String> {
+    let mut last_err: Option<String> = None;
+
+    for key_id in ecdsa_key_candidates() {
+        match ensure_identity_for_key(key_id.clone(), canister_id.clone(), derivation_path.clone())
+            .await
+        {
+            Ok(identity) => return Ok(identity),
+            Err(err) if is_unknown_key_error(&err) => {
+                last_err = Some(err);
+            }
+            Err(err) => return Err(err),
+        }
+    }
+
+    Err(last_err.unwrap_or_else(|| "Failed to resolve ECDSA identity".to_string()))
+}
+
 #[update]
 pub fn set_rpc_config(chain_id: u64, rpc_url: String) -> Result<(), String> {
     let caller = ic_cdk::api::caller();
@@ -284,17 +324,26 @@ pub fn get_rpc_config() -> Option<RpcConfigState> {
     STATE.with(|cfg| cfg.borrow().rpc_config.clone())
 }
 
-fn get_rpc_services() -> Result<RpcServices, String> {
+#[derive(Clone)]
+struct RpcContext {
+    services: RpcServices,
+    chain_id: u64,
+}
+
+fn get_rpc_context() -> Result<RpcContext, String> {
     STATE.with(|cfg| {
         cfg.borrow()
             .rpc_config
             .clone()
-            .map(|c| RpcServices::Custom {
-                chainId: c.chain_id,
-                services: vec![RpcApi {
-                    url: c.rpc_url,
-                    headers: None,
-                }],
+            .map(|config| RpcContext {
+                chain_id: config.chain_id,
+                services: RpcServices::Custom {
+                    chainId: config.chain_id,
+                    services: vec![RpcApi {
+                        url: config.rpc_url,
+                        headers: None,
+                    }],
+                },
             })
             .ok_or("RPC config not set".to_string())
     })
@@ -345,7 +394,7 @@ pub async fn get_canister_public_key(
     canister_id: Option<Principal>,
     derivation_path: Vec<Vec<u8>>,
 ) -> Result<Vec<u8>, String> {
-    ensure_identity(key_id, canister_id, derivation_path)
+    ensure_identity_for_key(key_id, canister_id, derivation_path)
         .await
         .map(|identity| identity.public_key)
 }
@@ -357,7 +406,7 @@ pub async fn sign_eip1559_transaction(
 ) -> Result<SignedTransaction, String> {
     const EIP1559_TX_ID: u8 = 2;
 
-    let identity = ensure_identity(key_id.clone(), None, derivation_path.clone()).await?;
+    let identity = ensure_identity_for_key(key_id.clone(), None, derivation_path.clone()).await?;
     let ecdsa_pub_key = identity.public_key.clone();
 
     let mut unsigned_tx_bytes = tx.rlp().to_vec();
@@ -428,11 +477,7 @@ fn y_parity(prehash: &[u8], sig: &[u8], pubkey: &[u8]) -> Result<u64, String> {
 #[update]
 pub async fn get_canister_eth_address() -> Result<String, String> {
     ensure_authorized()?;
-    let key_id = EcdsaKeyId {
-        curve: ic_cdk::api::management_canister::ecdsa::EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-    ensure_identity(key_id, None, vec![])
+    ensure_identity(None, vec![])
         .await
         .map(|identity| identity.eth_address)
 }
@@ -473,11 +518,26 @@ async fn estimate_transaction_fees(
                 ic_cdk::println!("reward_vec[0]: {:?}", reward_vec[0]);
                 let reward_str = nat_to_hex(&reward_vec[0]);
                 ic_cdk::println!("reward_str: {}", reward_str);
-                let reward = U256::from_str_radix(&reward_str, 16)
+                let mut reward = U256::from_str_radix(&reward_str, 16)
                     .map_err(|e| format!("Failed to parse reward: {:?}", e))?;
 
+                let min_priority_fee = U256::from(MIN_PRIORITY_FEE_WEI);
+                if reward < min_priority_fee {
+                    ic_cdk::println!(
+                        "priority fee {} below minimum {}; overriding",
+                        reward,
+                        MIN_PRIORITY_FEE_WEI
+                    );
+                    reward = min_priority_fee;
+                }
+
+                let mut max_fee_per_gas = base_fee.checked_add(reward).unwrap_or_else(|| U256::MAX);
+                if max_fee_per_gas < reward {
+                    max_fee_per_gas = reward;
+                }
+
                 Ok(FeeEstimates {
-                    max_fee_per_gas: base_fee + reward,
+                    max_fee_per_gas,
                     max_priority_fee_per_gas: reward,
                 })
             }
@@ -497,14 +557,39 @@ async fn send_raw_transaction(
     let cycles = 10_000_000_000;
 
     match evm_rpc
-        .eth_send_raw_transaction(rpc_services, None, tx.tx_hex, cycles)
+        .eth_send_raw_transaction(rpc_services, None, tx.tx_hex.clone(), cycles)
         .await
     {
-        Ok((_result,)) => {
-            ic_cdk::println!("Transaction hash: {}", tx.tx_hash);
-            Ok(tx.tx_hash)
-        }
-        Err(e) => Err(format!("RPC error: {:?}", e)),
+        Ok((MultiSendRawTransactionResult::Consistent(result),)) => match result {
+            SendRawTransactionResult::Ok(status) => match status {
+                SendRawTransactionStatus::Ok(provider_hash) => {
+                    let hash = provider_hash.unwrap_or_else(|| tx.tx_hash.clone());
+                    ic_cdk::println!("Transaction hash: {}", hash);
+                    Ok(hash)
+                }
+                SendRawTransactionStatus::NonceTooLow => Err(format!(
+                    "RPC rejected transaction {}: nonce too low",
+                    tx.tx_hash
+                )),
+                SendRawTransactionStatus::NonceTooHigh => Err(format!(
+                    "RPC rejected transaction {}: nonce too high",
+                    tx.tx_hash
+                )),
+                SendRawTransactionStatus::InsufficientFunds => Err(format!(
+                    "RPC rejected transaction {}: insufficient funds for gas",
+                    tx.tx_hash
+                )),
+            },
+            SendRawTransactionResult::Err(err) => Err(format!(
+                "RPC provider returned error for {}: {:?}",
+                tx.tx_hash, err
+            )),
+        },
+        Ok((MultiSendRawTransactionResult::Inconsistent(responses),)) => Err(format!(
+            "Inconsistent sendRawTransaction responses for {}: {:?}",
+            tx.tx_hash, responses
+        )),
+        Err(e) => Err(format!("RPC call failed: {:?}", e)),
     }
 }
 
@@ -528,12 +613,11 @@ pub async fn transfer_eth(transfer_args: TransferArgs, nonce: u64) -> CallResult
         .map(U256::from)
         .unwrap_or(U256::from(21000));
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
-    let key_id = EcdsaKeyId {
-        curve: ic_cdk::api::management_canister::ecdsa::EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
 
     let evm_rpc = EVM_RPC;
 
@@ -552,7 +636,7 @@ pub async fn transfer_eth(transfer_args: TransferArgs, nonce: u64) -> CallResult
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(gas),
         nonce: Some(U256::from(nonce)),
-        chain_id: Some(U64::from(17000u64)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Default::default(),
         access_list: Default::default(),
     };
@@ -603,16 +687,13 @@ pub async fn approve_erc20(
     let spender_addr = decode_h160(&spender, "spender")?;
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
     let evm_rpc = EVM_RPC;
 
-    let key_id = EcdsaKeyId {
-        curve: EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-
-    let identity = ensure_identity(key_id.clone(), None, vec![]).await?;
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
     let sender = identity.eth_address.clone();
     let nonce = get_nonce(sender.clone(), rpc_services.clone(), evm_rpc.clone()).await?;
 
@@ -652,7 +733,7 @@ pub async fn approve_erc20(
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(U256::from(300_000)),
         nonce: Some(nonce),
-        chain_id: Some(U64::from(17000)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Some(data.into()),
         access_list: Default::default(),
     };
@@ -676,16 +757,13 @@ pub async fn transfer_from_erc20(
     let to_addr = decode_h160(&to, "to")?;
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
     let evm_rpc = EVM_RPC;
 
-    let key_id = EcdsaKeyId {
-        curve: EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-
-    let identity = ensure_identity(key_id.clone(), None, vec![]).await?;
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
     let sender = identity.eth_address.clone();
     let nonce = get_nonce(sender.clone(), rpc_services.clone(), evm_rpc.clone()).await?;
 
@@ -733,7 +811,7 @@ pub async fn transfer_from_erc20(
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(U256::from(300_000)),
         nonce: Some(nonce),
-        chain_id: Some(U64::from(17000)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Some(data.into()),
         access_list: Default::default(),
     };
@@ -755,16 +833,13 @@ pub async fn mint(
     let to_addr = decode_h160(&to, "to")?;
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
     let evm_rpc = EVM_RPC;
 
-    let key_id = EcdsaKeyId {
-        curve: EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-
-    let identity = ensure_identity(key_id.clone(), None, vec![]).await?;
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
     let sender = identity.eth_address.clone();
     let nonce = get_nonce(sender.clone(), rpc_services.clone(), evm_rpc.clone()).await?;
 
@@ -803,7 +878,7 @@ pub async fn mint(
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(U256::from(300_000)),
         nonce: Some(nonce),
-        chain_id: Some(U64::from(17000)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Some(data.into()),
         access_list: Default::default(),
     };
@@ -820,16 +895,13 @@ pub async fn burn(contract_address: String, amount: String) -> CallResult<Transa
     let contract_addr = decode_h160(&contract_address, "contract")?;
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
     let evm_rpc = EVM_RPC;
 
-    let key_id = EcdsaKeyId {
-        curve: EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-
-    let identity = ensure_identity(key_id.clone(), None, vec![]).await?;
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
     let sender = identity.eth_address.clone();
     let nonce = get_nonce(sender.clone(), rpc_services.clone(), evm_rpc.clone()).await?;
 
@@ -861,7 +933,7 @@ pub async fn burn(contract_address: String, amount: String) -> CallResult<Transa
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(U256::from(300_000)),
         nonce: Some(nonce),
-        chain_id: Some(U64::from(17000)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Some(data.into()),
         access_list: Default::default(),
     };
@@ -883,16 +955,13 @@ pub async fn burn_from(
     let from_addr = decode_h160(&from, "from")?;
     let amount_u256 = U256::from_dec_str(&amount).map_err(|e| format!("Invalid amount: {}", e))?;
 
-    let rpc_services = get_rpc_services()?;
+    let rpc_context = get_rpc_context()?;
+    let rpc_services = rpc_context.services.clone();
 
     let evm_rpc = EVM_RPC;
 
-    let key_id = EcdsaKeyId {
-        curve: EcdsaCurve::Secp256k1,
-        name: ECDSA_KEY_NAME.to_string(),
-    };
-
-    let identity = ensure_identity(key_id.clone(), None, vec![]).await?;
+    let identity = ensure_identity(None, vec![]).await?;
+    let key_id = identity.key_id.clone();
     let sender = identity.eth_address.clone();
     let nonce = get_nonce(sender.clone(), rpc_services.clone(), evm_rpc.clone()).await?;
 
@@ -931,7 +1000,7 @@ pub async fn burn_from(
         max_priority_fee_per_gas: Some(max_priority_fee_per_gas),
         gas: Some(U256::from(300_000)),
         nonce: Some(nonce),
-        chain_id: Some(U64::from(17000)),
+        chain_id: Some(U64::from(rpc_context.chain_id)),
         data: Some(data.into()),
         access_list: Default::default(),
     };
@@ -950,7 +1019,10 @@ pub async fn verify_tx_receipt_with_validation(
     ensure_authorized()?;
     require_bridge_contract(&expected_contract)?;
 
-    let rpc_services = get_rpc_services()?;
+    let RpcContext {
+        services: rpc_services,
+        ..
+    } = get_rpc_context()?;
     let evm_rpc = EVM_RPC;
     let cycles = 10_000_000_000;
 

@@ -71,6 +71,12 @@ const config: HardhatUserConfig = {
       url: configVariable("HOLESKY_RPC_URL"),
       accounts: [configVariable("HOLESKY_PRIVATE_KEY")],
     },
+    bnb_testnet: {
+      type: "http",
+      chainType: "l1",
+      url: configVariable("BNB_TESTNET_RPC_URL"),
+      accounts: [configVariable("HOLESKY_PRIVATE_KEY")],
+    },
   },
   verify: {
     etherscan: {
