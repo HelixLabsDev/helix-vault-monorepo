@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
@@ -13,13 +13,7 @@ import { Button } from "@/app/ui/button";
 import { useStore } from "@/lib/store";
 import { useStoreCore } from "@/lib/storeCoreVault";
 
-import {
-  coreVaultPrincipal,
-  faucetActorAddress,
-  IDENTITY_URL,
-  ledgerActorAddress,
-  vaultActorAddress,
-} from "@/lib/constant";
+import { getNetworkConfig } from "@/lib/constant";
 import { Badge } from "./badge";
 import { ChevronDown } from "lucide-react";
 
@@ -47,6 +41,8 @@ export function InternetIdentityConnect({
 
   const { setActorCore } = useStoreCore();
 
+  const networkConfig = useMemo(() => getNetworkConfig(), []);
+
   // Init and check session on mount
   useEffect(() => {
     (async () => {
@@ -60,14 +56,15 @@ export function InternetIdentityConnect({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [isAuthenticated, networkConfig]);
 
   // Connect II
   async function login() {
     if (!authClient) return;
 
     await authClient.login({
-      identityProvider: IDENTITY_URL,
+      identityProvider: networkConfig.identityProvider,
+      derivationOrigin: window.location.origin,
       onSuccess: async () => {
         await updateActor(authClient);
       },
@@ -86,28 +83,45 @@ export function InternetIdentityConnect({
     setActor(null);
     setLedgerActor(null);
     setActorCore(null);
+    setFaucetActor(null);
   }
 
   // Setup actors with identity
   async function updateActor(authClient: AuthClient) {
     const identity: any = authClient.getIdentity();
-    const isMainnet = true;
+    const isLocal = networkConfig.id === "local";
     const agent = new HttpAgent({
       identity,
-      host: isMainnet ? "https://ic0.app" : "http://localhost:4943",
+      host: networkConfig.host,
     });
 
-    if (!isMainnet) {
+    if (isLocal) {
       await agent.fetchRootKey();
     }
 
-    const actor = createActor(vaultAddress || vaultActorAddress, { agent });
-    const actorCore = createCoreVault(coreVaultPrincipal, { agent });
-    const ledgerActor = createLedgerActor(ledgerActorAddress, {
-      agentOptions: { identity },
-    });
+    const resolvedVaultId =
+      vaultAddress || networkConfig.canisters.vault || undefined;
+    if (!resolvedVaultId) {
+      console.error("Vault canister ID is not configured for", networkConfig);
+      return;
+    }
 
-    const faucetActor = createFaucetVault(faucetActorAddress, { agent });
+    const actor = createActor(resolvedVaultId, { agent });
+
+    const coreVaultId = networkConfig.canisters.coreVault;
+    const actorCore = coreVaultId
+      ? createCoreVault(coreVaultId, { agent })
+      : null;
+
+    const ledgerCanisterId = networkConfig.canisters.ledger;
+    const ledgerActor = ledgerCanisterId
+      ? createLedgerActor(ledgerCanisterId, { agent })
+      : null;
+
+    const faucetCanisterId = networkConfig.canisters.faucet;
+    const faucetActor = faucetCanisterId
+      ? createFaucetVault(faucetCanisterId, { agent })
+      : null;
 
     setActor(actor);
     setActorCore(actorCore);

@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import hstICPAbi from "../abi/HelixStakedICP.json";
-import { hstICPContract } from "../lib/constant";
 import { getContractEssentials } from "./helpers";
 import { toast } from "sonner";
 
@@ -14,7 +13,15 @@ interface HstICPContracts {
   signer: ethers.Signer; // guaranteed for write
 }
 
-export async function getHstICPContract(): Promise<HstICPContracts> {
+export async function getHstICPContract(
+  contractAddress: string
+): Promise<HstICPContracts> {
+  if (!contractAddress) {
+    throw new Error(
+      "hstICP contract address is not configured for the selected network."
+    );
+  }
+
   const { provider, signer } = await getContractEssentials();
 
   if (!provider) {
@@ -34,12 +41,12 @@ export async function getHstICPContract(): Promise<HstICPContracts> {
 
   // In v6, pass the runner directly (Provider for read, Signer for write)
   const hstICPReadContract = new ethers.Contract(
-    hstICPContract,
+    contractAddress,
     hstICPAbi,
     provider
   );
   const hstICPWriteContract = new ethers.Contract(
-    hstICPContract,
+    contractAddress,
     hstICPAbi,
     signer
   );

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
@@ -11,13 +11,7 @@ import { createActor as createCoreVault } from "@/declarations/core_vault_backen
 import { createActor as createFaucetVault } from "@/declarations/icrc_faucet_backend"; // Ledger actorr
 import { Button } from "./button";
 import { useStore } from "@/lib/store";
-import {
-  coreVaultPrincipal,
-  faucetActorAddress,
-  IDENTITY_URL,
-  ledgerActorAddress,
-  vaultActorAddress,
-} from "@/lib/constant";
+import { getNetworkConfig } from "@/lib/constant";
 import { useStoreCore } from "@/lib/storeCoreVault";
 
 const InternetIdentity = () => {
@@ -31,6 +25,7 @@ const InternetIdentity = () => {
     setPrincipal,
     setLedgerActor,
     setFaucetActor,
+    vaultAddress,
   } = useStore();
 
   const {
@@ -44,11 +39,11 @@ const InternetIdentity = () => {
     // setLedgerActor,
   } = useStoreCore();
 
-  const { vaultAddress } = useStore();
+  const networkConfig = useMemo(() => getNetworkConfig(), []);
 
   useEffect(() => {
     updateActor();
-  }, []);
+  }, [networkConfig]);
 
   async function updateActor(): Promise<void> {
     const authClient = await AuthClient.create();
@@ -57,33 +52,48 @@ const InternetIdentity = () => {
 
     if (isAuthenticated) {
       const identity: any = authClient.getIdentity();
-      const isMainnet = true;
+      const isLocal = networkConfig.id === "local";
       const agent = new HttpAgent({
         identity,
-        host: isMainnet ? "https://ic0.app" : "http://localhost:4943",
+        host: networkConfig.host,
       });
-      if (!isMainnet) {
+      if (isLocal) {
         await agent.fetchRootKey();
       }
 
-      const actor = createActor(
-        vaultAddress.length > 0 ? vaultAddress : vaultActorAddress,
-        { agent }
-      );
+      const resolvedVaultId =
+        vaultAddress.length > 0
+          ? vaultAddress
+          : networkConfig.canisters.vault || undefined;
+      if (!resolvedVaultId) {
+        console.error(
+          "Vault canister ID missing. Configure local canister IDs first."
+        );
+        return;
+      }
+
+      const actor = createActor(resolvedVaultId, { agent });
       setActor(actor);
 
-      const actorCore = createCoreVault(coreVaultPrincipal, { agent });
+      const coreVaultId = networkConfig.canisters.coreVault;
+      const actorCore = coreVaultId
+        ? createCoreVault(coreVaultId, { agent })
+        : null;
       setActorCore(actorCore);
 
-      const faucetActor = createFaucetVault(faucetActorAddress, { agent });
+      const faucetId = networkConfig.canisters.faucet;
+      const faucetActor = faucetId
+        ? createFaucetVault(faucetId, { agent })
+        : null;
       setFaucetActor(faucetActor);
 
       setIsAuthenticated(true);
       setPrincipal(identity.getPrincipal().toText().toString());
 
-      const ledgerActor = createLedgerActor(ledgerActorAddress, {
-        agentOptions: { identity },
-      });
+      const ledgerId = networkConfig.canisters.ledger;
+      const ledgerActor = ledgerId
+        ? createLedgerActor(ledgerId, { agent })
+        : null;
       setLedgerActor(ledgerActor);
     } else {
       setIsAuthenticated(false);
@@ -94,7 +104,8 @@ const InternetIdentity = () => {
   async function login(): Promise<void> {
     if (authClient) {
       await authClient.login({
-        identityProvider: IDENTITY_URL,
+        identityProvider: networkConfig.identityProvider,
+        derivationOrigin: window.location.origin,
         onSuccess: updateActor,
       });
     }
@@ -104,6 +115,9 @@ const InternetIdentity = () => {
     if (authClient) {
       await authClient.logout();
       setActor(null);
+      setLedgerActor(null);
+      setActorCore(null);
+      setFaucetActor(null);
       setIsAuthenticated(false);
       setPrincipal(null);
     }

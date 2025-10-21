@@ -28,8 +28,8 @@ use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::time::Duration;
 
-const HELIX_VAULT_CANISTER_ID: &str = "b77ix-eeaaa-aaaaa-qaada-cai";
-const BRIDGE_CONTRACT_ADDRESS: &str = "0x272aEe5159a257359e84EAB3a6e3bd7F90b712EC";
+const HELIX_VAULT_CANISTER_ID: &str = "a3shf-5eaaa-aaaaa-qaafa-cai";
+const BRIDGE_CONTRACT_ADDRESS: &str = "0x5a95715DA13CF8a72Af1460868D3e7d2eDfC4E71";
 const PROD_ECDSA_KEY_NAME: &str = "secp256k1";
 const LOCAL_ECDSA_KEY_NAME: &str = "dfx_test_key";
 const ECDSA_KEY_NAMES: &[&str] = &[PROD_ECDSA_KEY_NAME, LOCAL_ECDSA_KEY_NAME];

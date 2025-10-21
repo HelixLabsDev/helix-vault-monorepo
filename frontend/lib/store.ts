@@ -3,6 +3,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { _SERVICE } from "@/declarations/helix_vault_backend/helix_vault_backend.did";
 import { _SERVICE as ledgerType } from "@/declarations/icrc1-ledger/icrc1-ledger.did";
 import { _SERVICE as faucetType } from "@/declarations/icrc_faucet_backend/icrc_faucet_backend.did";
+import { getNetworkConfig } from "./constant";
 
 interface AppState {
   actor: _SERVICE | null;
@@ -35,11 +36,13 @@ interface AppState {
   withdrawBalance: number;
 }
 
+const defaultNetworkConfig = getNetworkConfig();
+
 export const useStore = create<AppState>((set) => ({
   actor: null,
   setActor: (actor) => set({ actor }),
 
-  vaultAddress: "osvil-vyaaa-aaaaj-qnsba-cai",
+  vaultAddress: defaultNetworkConfig.canisters.vault ?? "",
   setVaultAddress: (vaultAddress) => set({ vaultAddress }),
 
   ledgerActor: null,

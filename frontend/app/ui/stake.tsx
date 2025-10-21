@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Principal } from "@dfinity/principal";
 import { toast } from "sonner";
 import { Input } from "@/app/ui/input";
@@ -20,7 +20,7 @@ import { parse18 } from "@/lib/helpers";
 import { useAccount } from "wagmi";
 import Link from "next/link";
 import { StatsSection } from "./stats-action";
-import { hstICPContract } from "../../lib/constant";
+import { getNetworkConfig } from "@/lib/constant";
 import { _userDetail } from "@/lib/axios/_user_detail";
 import { VaultUser } from "../icp/page";
 import { DepositProgressDialog, initialSteps } from "./progress-bar";
@@ -59,6 +59,8 @@ export default function StakeDemo({
     isAuthenticated,
     vaultAddress,
   } = useStore();
+
+  const networkConfig = useMemo(() => getNetworkConfig(), []);
 
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
   const [isWithdraw, setIsWithdraw] = useState<boolean>(false);
@@ -339,14 +341,16 @@ export default function StakeDemo({
         setDepositError(null);
       } else {
         updateStepStatus("burn", "in-progress");
-        const { hstICPWriteContract } = await getHstICPContract();
+        const { hstICPWriteContract } = await getHstICPContract(
+          networkConfig.contracts.hstICP
+        );
 
         const amountWei = parse18(amount ?? 0);
         const tx = await hstICPWriteContract?.burn(amountWei);
         await tx.wait();
         updateStepStatus("burn", "completed");
         const expected_eth_from = address ?? "";
-        const expected_contract = hstICPContract;
+        const expected_contract = networkConfig.contracts.hstICP;
 
         updateStepStatus("checking", "in-progress");
 

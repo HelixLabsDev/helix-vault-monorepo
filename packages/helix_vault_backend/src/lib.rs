@@ -17,7 +17,7 @@ use std::str::FromStr;
 
 const ICRC1_LEDGER_CANISTER_ID: &str = "br5f7-7uaaa-aaaaa-qaaca-cai";
 const EVM_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
-const CONTRACT_ADDRESS: &str = "0x272aEe5159a257359e84EAB3a6e3bd7F90b712EC";
+const CONTRACT_ADDRESS: &str = "0x5a95715DA13CF8a72Af1460868D3e7d2eDfC4E71";
 const DEFAULT_TRANSFER_FEE: u64 = 10_000;
 
 #[derive(Clone, Default)]

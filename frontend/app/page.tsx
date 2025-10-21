@@ -34,37 +34,47 @@ export default function Home() {
     const fetch = async () => {
       setLoading(true);
       try {
-        const dat = await actorCore?.list_proposals();
+        const proposals = await actorCore?.list_proposals();
 
-        if (!dat || dat.length === 0) return;
+        if (!proposals || proposals.length === 0) {
+          setData2([]);
+          return;
+        }
 
-        const vaultId = dat[0].executed_vault_id?.[0];
-        const vaultText = vaultId?.toText?.() || "N/A";
-        console.log("executed_vault_id:", vaultText);
+        let userTokenData: any[] = [];
+        try {
+          const usersResponse = await _users();
+          if (Array.isArray(usersResponse?.data)) {
+            userTokenData = usersResponse.data;
+          }
+        } catch (userErr) {
+          console.warn(
+            "User dataset unavailable, proceeding without balances",
+            userErr
+          );
+        }
 
-        const usersData = await _users();
+        const enrichedProposals = proposals.map((proposal) => {
+          const statusKey = Object.keys(proposal.status)[0];
+          const vaultPrincipal = proposal.executed_vault_id?.[0];
+          const vaultTextId = vaultPrincipal?.toText?.() || "";
 
-        const executed = dat.filter((el) => {
-          return Object.keys(el.status)[0] === "Executed";
-        });
-
-        // Merge with user token data
-        const enrichedProposals = executed.map((proposal) => {
-          const vaultTextId = proposal.executed_vault_id?.[0]?.toText?.() || "";
-
-          // Search matching user + token
           let lockedAmount = 0;
-          usersData.data.forEach((user: any) => {
-            user.tokenBalances.forEach((token: any) => {
-              if (token.tokenId === vaultTextId) {
-                lockedAmount += token.lockedAmount;
-              }
+          if (vaultTextId && userTokenData.length > 0) {
+            userTokenData.forEach((user: any) => {
+              user.tokenBalances.forEach((token: any) => {
+                if (token.tokenId === vaultTextId) {
+                  lockedAmount += token.lockedAmount;
+                }
+              });
             });
-          });
+          }
 
           return {
             ...proposal,
-            lockedAmount, // attach matched lockedAmount (or 0)
+            lockedAmount,
+            statusKey,
+            executedVaultText: vaultTextId,
           };
         });
 

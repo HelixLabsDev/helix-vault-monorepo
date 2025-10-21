@@ -14,12 +14,18 @@ if (!projectId) {
   throw new Error("Project ID is not defined");
 }
 
+const metadataUrl =
+  process.env.NEXT_PUBLIC_APPKIT_METADATA_URL ??
+  (typeof window !== "undefined"
+    ? window.location.origin
+    : "http://127.0.0.1:4949");
+
 // Set up metadata
 const metadata = {
   name: "EigenFi - ICP Vault",
   description:
     "Helix Vault is a modular liquid staking and cross-chain restaking infrastructure on ICP. It allows users to stake hICP and mint hstICP on Ethereum, with trustless 1:1 redemption, on-chain governance, and shared ownership control.",
-  url: "https://reown.com/appkit", // origin must match your domain & subdomain
+  url: metadataUrl, // origin must match your domain & subdomain
   icons: ["/favicon.ico", "/icp.svg"],
 };
 

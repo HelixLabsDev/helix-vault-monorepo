@@ -225,7 +225,7 @@ async fn execute_proposal(id: u64) -> Result_ {
             token_type,
             duration_secs,
         } => {
-            let core_vault_canister_id = match Principal::from_text("zb2a6-yyaaa-aaaaj-qnr7a-cai") {
+            let core_vault_canister_id = match Principal::from_text("by6od-j4aaa-aaaaa-qaadq-cai") {
                 Ok(principal) => principal,
                 Err(e) => return Result_::Err(format!("Invalid canister ID: {}", e)),
             };
