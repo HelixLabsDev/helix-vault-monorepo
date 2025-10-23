@@ -23,23 +23,11 @@ export interface NetworkConfig {
   contracts: NetworkContracts;
 }
 
-const LOCAL_HOST =
-  process.env.NEXT_PUBLIC_LOCAL_IC_HOST ?? "http://127.0.0.1:4949";
-
-const LOCAL_IDENTITY_CANISTER_ID =
-  process.env.NEXT_PUBLIC_LOCAL_INTERNET_IDENTITY_CANISTER_ID ??
-  process.env.CANISTER_ID_INTERNET_IDENTITY ??
-  "";
-
-const USE_LOCAL_IDENTITY =
-  process.env.NEXT_PUBLIC_USE_LOCAL_IDENTITY === "true" &&
-  LOCAL_IDENTITY_CANISTER_ID.length > 0;
-
-const LOCAL_IDENTITY_PROVIDER =
-  process.env.NEXT_PUBLIC_LOCAL_IDENTITY_PROVIDER ??
-  (USE_LOCAL_IDENTITY
-    ? `http://127.0.0.1:4949/?canisterId=${LOCAL_IDENTITY_CANISTER_ID}`
-    : "https://identity.ic0.app/");
+const LOCAL_HOST = "http://127.0.0.1:4949";
+const LOCAL_IDENTITY_CANISTER_ID = "rdmx6-jaaaa-aaaaa-aaadq-cai";
+const LOCAL_IDENTITY_PROVIDER = `http://${LOCAL_IDENTITY_CANISTER_ID}.localhost:4949/`;
+const LOCAL_FAUCET_CANISTER_ID = "";
+const LOCAL_HST_ICP_CONTRACT = "0x5a95715DA13CF8a72Af1460868D3e7d2eDfC4E71";
 
 const NETWORKS: Record<NetworkId, NetworkConfig> = {
   mainnet: {
@@ -68,12 +56,10 @@ const NETWORKS: Record<NetworkId, NetworkConfig> = {
       vault: "a3shf-5eaaa-aaaaa-qaafa-cai",
       ledger: "br5f7-7uaaa-aaaaa-qaaca-cai",
       coreVault: "by6od-j4aaa-aaaaa-qaadq-cai",
-      faucet: process.env.NEXT_PUBLIC_LOCAL_FAUCET_CANISTER_ID ?? "",
+      faucet: LOCAL_FAUCET_CANISTER_ID,
     },
     contracts: {
-      hstICP:
-        process.env.NEXT_PUBLIC_LOCAL_HST_ICP_CONTRACT ??
-        "0x5a95715DA13CF8a72Af1460868D3e7d2eDfC4E71",
+      hstICP: LOCAL_HST_ICP_CONTRACT,
     },
   },
 };

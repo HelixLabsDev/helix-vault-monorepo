@@ -53,10 +53,16 @@ export default function LoginStepperDialog() {
   };
 
   const TriggerButton = useMemo(() => {
+    const truncatedPrincipal = truncatePrincipal(principal ?? "");
     if (isFullyConnected) {
       return (
         <Button variant="outline" className="flex items-center gap-2">
           <Wallet className="w-4 h-4 text-green-500" />
+          {truncatedPrincipal && (
+            <Badge variant="secondary" className="text-[10px]">
+              {truncatedPrincipal}
+            </Badge>
+          )}
           <Badge variant="secondary" className="text-[10px]">
             ICP
           </Badge>
@@ -70,9 +76,12 @@ export default function LoginStepperDialog() {
     }
     if (isAuthenticated && !isConnected) {
       return (
-        <Button variant="default" className="gap-2">
+        <Button variant="outline" className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-blue-500" />
-          ICP Connected… (waiting EVM)
+          <Badge variant="secondary" className="text-[10px]">
+            ICP
+          </Badge>
+          {truncatedPrincipal || "Connected"}
         </Button>
       );
     }
@@ -85,7 +94,7 @@ export default function LoginStepperDialog() {
       );
     }
     return <Button>Login</Button>;
-  }, [isFullyConnected, isAuthenticated, isConnected, chain?.name]);
+  }, [isFullyConnected, isAuthenticated, isConnected, chain?.name, principal]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { AuthClient } from "@dfinity/auth-client";
+import { AuthClient, LocalStorage } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
 import { createActor as createLedgerActor } from "@/declarations/icrc1-ledger"; // Ledger actor
@@ -46,7 +46,11 @@ const InternetIdentity = () => {
   }, [networkConfig]);
 
   async function updateActor(): Promise<void> {
-    const authClient = await AuthClient.create();
+    const createOptions =
+      networkConfig.id === "local"
+        ? { storage: new LocalStorage("helix-local-") }
+        : undefined;
+    const authClient = await AuthClient.create(createOptions);
     const isAuthenticated = await authClient.isAuthenticated();
     setAuthClient(authClient);
 
@@ -103,9 +107,10 @@ const InternetIdentity = () => {
 
   async function login(): Promise<void> {
     if (authClient) {
+      const isLocal = networkConfig.id === "local";
       await authClient.login({
         identityProvider: networkConfig.identityProvider,
-        derivationOrigin: window.location.origin,
+        ...(isLocal ? {} : { derivationOrigin: window.location.origin }),
         onSuccess: updateActor,
       });
     }

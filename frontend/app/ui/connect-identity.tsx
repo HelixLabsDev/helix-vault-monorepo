@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo } from "react";
-import { AuthClient } from "@dfinity/auth-client";
+import { AuthClient, LocalStorage } from "@dfinity/auth-client";
 import { HttpAgent } from "@dfinity/agent";
 import { createActor } from "@/declarations/helix_vault_backend";
 import { createActor as createLedgerActor } from "@/declarations/icrc1-ledger";
@@ -46,7 +46,11 @@ export function InternetIdentityConnect({
   // Init and check session on mount
   useEffect(() => {
     (async () => {
-      const _authClient = await AuthClient.create();
+      const createOptions =
+        networkConfig.id === "local"
+          ? { storage: new LocalStorage("helix-local-") }
+          : undefined;
+      const _authClient = await AuthClient.create(createOptions);
       setAuthClient(_authClient);
 
       const loggedIn = await _authClient.isAuthenticated();
@@ -56,15 +60,16 @@ export function InternetIdentityConnect({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, networkConfig]);
+  }, [networkConfig]);
 
   // Connect II
   async function login() {
     if (!authClient) return;
 
+    const isLocal = networkConfig.id === "local";
     await authClient.login({
       identityProvider: networkConfig.identityProvider,
-      derivationOrigin: window.location.origin,
+      ...(isLocal ? {} : { derivationOrigin: window.location.origin }),
       onSuccess: async () => {
         await updateActor(authClient);
       },

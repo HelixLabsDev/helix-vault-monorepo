@@ -12,6 +12,7 @@ use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
@@ -223,8 +224,8 @@ async fn attempt_refund(
             owner: recipient,
             subaccount: None,
         },
-        amount,
-        fee: Some(fee),
+        amount: amount.clone(),
+        fee: Some(fee.clone()),
         memo: None,
         created_at_time: None,
     };
@@ -237,6 +238,52 @@ async fn attempt_refund(
     .await
     {
         Ok((Ok(_),)) => Ok(()),
+        Ok((Err(TransferError::InsufficientFunds { .. }),)) => {
+            let adjusted_amount = match amount.0.cmp(&fee.0) {
+                Ordering::Greater => Nat::from(amount.0.clone() - fee.0.clone()),
+                _ => {
+                    return Err(
+                        "Refund amount is not sufficient to cover the transfer fee.".to_string()
+                    )
+                }
+            };
+
+            if adjusted_amount.0.is_zero() {
+                return Err(
+                    "Refund amount becomes zero after accounting for transfer fee.".to_string(),
+                );
+            }
+
+            let adjusted_arg = TransferArg {
+                from_subaccount: None,
+                to: Account {
+                    owner: recipient,
+                    subaccount: None,
+                },
+                amount: adjusted_amount,
+                fee: Some(fee),
+                memo: None,
+                created_at_time: None,
+            };
+
+            match call::<(TransferArg,), (Result<Nat, TransferError>,)>(
+                token_canister,
+                "icrc1_transfer",
+                (adjusted_arg,),
+            )
+            .await
+            {
+                Ok((Ok(_),)) => Ok(()),
+                Ok((Err(err),)) => Err(format!(
+                    "Refund transfer failed after adjustment: {:?}",
+                    err
+                )),
+                Err(err) => Err(format!(
+                    "Refund transfer call failed after adjustment: {:?}",
+                    err
+                )),
+            }
+        }
         Ok((Err(err),)) => Err(format!("Refund transfer failed: {:?}", err)),
         Err(err) => Err(format!("Refund transfer call failed: {:?}", err)),
     }
